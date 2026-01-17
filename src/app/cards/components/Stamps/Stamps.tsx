@@ -932,25 +932,23 @@ export default function Cards({ className, ...props }: ComponentProps<typeof mot
       <Footer
         className="col-1 row-2 py-2 pl-2 sm:py-2 sm:pb-2 lg:col-2 lg:row-2 lg:pl-0"
         onSelectCollection={handleSelectCollection}
-      >
+      />
+      {/* Hidden for e-commerce focus
         <FeedbackDialog
           containerRef={containerRef}
-          // todo(rpavlini): make this composable
           trigger={
             <button
-              style={
-                {
-                  '--shimmer-bg': colors.stone[400],
-                  '--shimmer-fg': colors.stone[500],
-                } as CSSProperties
-              }
+              style={{
+                '--shimmer-bg': colors.stone[400],
+                '--shimmer-fg': colors.stone[500],
+              } as CSSProperties}
               className="focus-dashed shimmer-text cursor-pointer font-mono uppercase lg:ml-0"
             >
               Give Feedback
             </button>
           }
         />
-      </Footer>
+      */}
     </motion.div>
   );
 }
