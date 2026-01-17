@@ -1,8 +1,8 @@
 'use client';
 
-import { motion } from 'framer-motion';
+import { AnimatePresence, motion, PanInfo } from 'framer-motion';
 import Image from 'next/image';
-import { CSSProperties, useCallback, useRef, useState } from 'react';
+import { CSSProperties, useCallback, useState } from 'react';
 
 import { cn } from '~/src/util';
 
@@ -22,8 +22,7 @@ export function DoubleSidedCard({
   defaultDimensions,
 }: DoubleSidedCardProps) {
   const sizeScale = isMobileSmall ? 0.6 : isMobile ? 0.8 : 1;
-  const [activeIndex, setActiveIndex] = useState(0);
-  const scrollRef = useRef<HTMLDivElement>(null);
+  const [showBack, setShowBack] = useState(false);
 
   const imageStyle = {
     '--width': card.width || defaultDimensions.width,
@@ -31,39 +30,32 @@ export function DoubleSidedCard({
     '--size-scale': sizeScale,
   } as CSSProperties;
 
-  const handleScroll = useCallback(() => {
-    if (!scrollRef.current || !isMobile) return;
-    const scrollLeft = scrollRef.current.scrollLeft;
-    const width = scrollRef.current.offsetWidth;
-    const newIndex = Math.round(scrollLeft / width);
-    setActiveIndex(newIndex);
-  }, [isMobile]);
+  const handleDragEnd = useCallback(
+    (_: MouseEvent | TouchEvent | PointerEvent, info: PanInfo) => {
+      const threshold = 50;
+      if (info.offset.x < -threshold && !showBack) {
+        setShowBack(true);
+      } else if (info.offset.x > threshold && showBack) {
+        setShowBack(false);
+      }
+    },
+    [showBack],
+  );
 
-  const scrollToIndex = useCallback((index: number) => {
-    if (!scrollRef.current) return;
-    const width = scrollRef.current.offsetWidth;
-    scrollRef.current.scrollTo({ left: index * width, behavior: 'smooth' });
-  }, []);
-
-  const cardContent = (side: 'front' | 'back') => (
-    <div className="flex flex-col items-center gap-2">
-      <span className="font-mono text-xs uppercase tracking-widest text-stone-500">
-        {side === 'front' ? 'FRONT' : 'BACK'}
-      </span>
-      <Image
-        data-slot={side === 'front' ? 'card-image' : undefined}
-        src={side === 'front' ? card.src : card.srcBack || card.src}
-        alt={`${card.name} - ${side === 'front' ? 'Front' : 'Back'}`}
-        width={card.width || defaultDimensions.width}
-        height={card.height || defaultDimensions.height}
-        priority
-        loading="eager"
-        style={imageStyle}
-        className={cn(
-          'pointer-events-none h-auto w-[calc(var(--size-scale)*var(--width)*1px)] object-contain object-center drop-shadow transition-all duration-200',
-        )}
-      />
-    </div>
+  const cardImage = (side: 'front' | 'back') => (
+    <Image
+      data-slot={side === 'front' ? 'card-image' : undefined}
+      src={side === 'front' ? card.src : card.srcBack || card.src}
+      alt={`${card.name} - ${side === 'front' ? 'Front' : 'Back'}`}
+      width={card.width || defaultDimensions.width}
+      height={card.height || defaultDimensions.height}
+      priority
+      loading="eager"
+      style={imageStyle}
+      className={cn(
+        'pointer-events-none h-auto w-[calc(var(--size-scale)*var(--width)*1px)] object-contain object-center drop-shadow transition-all duration-200',
+      )}
+    />
   );
 
   // Desktop: side-by-side layout
@@ -76,45 +68,68 @@ export function DoubleSidedCard({
         transition={{ duration: 0.2 }}
         className="flex items-start gap-4"
       >
-        {cardContent('front')}
-        {cardContent('back')}
+        <div className="flex flex-col items-center gap-2">
+          <span className="font-mono text-xs uppercase tracking-widest text-stone-500">
+            FRONT
+          </span>
+          {cardImage('front')}
+        </div>
+        <div className="flex flex-col items-center gap-2">
+          <span className="font-mono text-xs uppercase tracking-widest text-stone-500">
+            BACK
+          </span>
+          {cardImage('back')}
+        </div>
       </motion.div>
     );
   }
 
-  // Mobile: horizontal swipe carousel with centered cards
+  // Mobile: single card with swipe/tap to toggle
   return (
     <div className="flex flex-col items-center gap-3">
       <motion.div
-        ref={scrollRef}
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        exit={{ opacity: 0 }}
-        transition={{ duration: 0.2 }}
-        onScroll={handleScroll}
-        className="flex w-full snap-x snap-mandatory overflow-x-auto [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden"
+        drag="x"
+        dragConstraints={{ left: 0, right: 0 }}
+        dragElastic={0.2}
+        onDragEnd={handleDragEnd}
+        className="touch-pan-y"
       >
-        <div className="flex w-full shrink-0 snap-center justify-center">
-          {cardContent('front')}
-        </div>
-        <div className="flex w-full shrink-0 snap-center justify-center">
-          {cardContent('back')}
-        </div>
+        <AnimatePresence mode="wait" initial={false}>
+          <motion.div
+            key={showBack ? 'back' : 'front'}
+            initial={{ opacity: 0, x: showBack ? 20 : -20 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: showBack ? -20 : 20 }}
+            transition={{ duration: 0.15 }}
+            className="flex flex-col items-center gap-2"
+          >
+            <span className="font-mono text-xs uppercase tracking-widest text-stone-500">
+              {showBack ? 'BACK' : 'FRONT'}
+            </span>
+            {cardImage(showBack ? 'back' : 'front')}
+          </motion.div>
+        </AnimatePresence>
       </motion.div>
 
       <div className="flex items-center gap-2">
-        {[0, 1].map((index) => (
-          <button
-            key={index}
-            type="button"
-            aria-label={index === 0 ? 'View front' : 'View back'}
-            onClick={() => scrollToIndex(index)}
-            className={cn(
-              'size-2 rounded-full transition-colors',
-              activeIndex === index ? 'bg-stone-600' : 'bg-stone-300',
-            )}
-          />
-        ))}
+        <button
+          type="button"
+          aria-label="View front"
+          onClick={() => setShowBack(false)}
+          className={cn(
+            'size-2 rounded-full transition-colors',
+            !showBack ? 'bg-stone-600' : 'bg-stone-300',
+          )}
+        />
+        <button
+          type="button"
+          aria-label="View back"
+          onClick={() => setShowBack(true)}
+          className={cn(
+            'size-2 rounded-full transition-colors',
+            showBack ? 'bg-stone-600' : 'bg-stone-300',
+          )}
+        />
       </div>
     </div>
   );
