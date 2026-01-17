@@ -90,6 +90,7 @@ function Loupe({
   const setCoords = useLoupeStore((s) => s.setCoords);
   const setScale = useLoupeStore((s) => s.setScale);
   const scale = useLoupeStore((s) => s.scale);
+  const showBackSide = useLoupeStore((s) => s.showBackSide);
 
   const isMobile = useIsMobile();
   const store = useCardStore();
@@ -186,18 +187,26 @@ function Loupe({
     });
 
     const hasBackImage = selectedCard.srcBack || selectedCard.srcLgBack;
+    const showBackSide = useLoupeStore.getState().showBackSide;
     const frontSrcs = [selectedCard.srcLg, selectedCard.src];
     const backSrcs = hasBackImage
       ? [selectedCard.srcLgBack, selectedCard.srcBack, selectedCard.src].filter(Boolean) as string[]
       : [];
 
-    const loadImages = hasBackImage
-      ? Promise.all([loadFirstImage(frontSrcs), loadFirstImage(backSrcs)])
-      : loadFirstImage(frontSrcs).then((img) => [img, null] as const);
+    // Mobile: only load the currently displayed side
+    // Desktop: load both for side-by-side view
+    const loadImages = isMobile
+      ? (showBackSide && hasBackImage
+          ? loadFirstImage(backSrcs).then((img) => [null, img] as const)
+          : loadFirstImage(frontSrcs).then((img) => [img, null] as const))
+      : (hasBackImage
+          ? Promise.all([loadFirstImage(frontSrcs), loadFirstImage(backSrcs)])
+          : loadFirstImage(frontSrcs).then((img) => [img, null] as const));
 
     loadImages
       .then(([frontImg, backImg]) => {
-        if (!frontImg) {
+        const imgToShow = isMobile ? (showBackSide ? backImg : frontImg) : frontImg;
+        if (!imgToShow && !backImg) {
           return;
         }
 
@@ -212,17 +221,25 @@ function Loupe({
         const centerX = container.offsetWidth / 2;
         const centerY = container.offsetHeight / 2;
 
-        if (backImg && hasBackImage) {
-          // Draw both images side by side for double-sided cards
+        if (isMobile) {
+          // Mobile: single card centered (front or back based on toggle)
+          const img = showBackSide ? backImg : frontImg;
+          if (img) {
+            ctx.drawImage(img, centerX - imgWidth / 2, centerY - imgHeight / 2, imgWidth, imgHeight);
+          }
+        } else if (backImg && hasBackImage) {
+          // Desktop: draw both images side by side for double-sided cards
           const gap = 16 * baseScale; // gap-4 = 16px
           const totalWidth = imgWidth * 2 + gap;
           const startX = centerX - totalWidth / 2;
 
           // Draw front image
-          ctx.drawImage(frontImg, startX, centerY - imgHeight / 2, imgWidth, imgHeight);
+          if (frontImg) {
+            ctx.drawImage(frontImg, startX, centerY - imgHeight / 2, imgWidth, imgHeight);
+          }
           // Draw back image
           ctx.drawImage(backImg, startX + imgWidth + gap, centerY - imgHeight / 2, imgWidth, imgHeight);
-        } else {
+        } else if (frontImg) {
           // Single image (no back)
           ctx.drawImage(frontImg, centerX - imgWidth / 2, centerY - imgHeight / 2, imgWidth, imgHeight);
         }
@@ -243,6 +260,7 @@ function Loupe({
     baseScale,
     gridCellSize,
     activeCardContainerRef,
+    showBackSide,
   ]);
 
   const handlePointerDown = useCallback(

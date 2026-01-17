@@ -2,11 +2,12 @@
 
 import { AnimatePresence, motion, PanInfo } from 'framer-motion';
 import Image from 'next/image';
-import { CSSProperties, useCallback, useState } from 'react';
+import { CSSProperties, useCallback, useEffect } from 'react';
 
 import { cn } from '~/src/util';
 
 import { Card } from '../../models';
+import { useLoupeStore } from './Loupe/store';
 
 interface DoubleSidedCardProps {
   card: Card;
@@ -22,7 +23,13 @@ export function DoubleSidedCard({
   defaultDimensions,
 }: DoubleSidedCardProps) {
   const sizeScale = isMobileSmall ? 0.6 : isMobile ? 0.8 : 1;
-  const [showBack, setShowBack] = useState(false);
+  const showBack = useLoupeStore((s) => s.showBackSide);
+  const setShowBack = useLoupeStore((s) => s.setShowBackSide);
+
+  // Reset to front when component mounts (new card selected)
+  useEffect(() => {
+    setShowBack(false);
+  }, [card.id, setShowBack]);
 
   const imageStyle = {
     '--width': card.width || defaultDimensions.width,
