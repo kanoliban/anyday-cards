@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 700 980" width="700" height="980">
+  <rect width="700" height="980" fill="#FFFFFF" rx="16"/>
+  <rect x="40" y="40" width="620" height="900" fill="none" stroke="#E5E5E5" stroke-width="2" rx="8"/>
+  <text x="350" y="120" text-anchor="middle" font-family="system-ui, sans-serif" font-size="24" fill="#999999">Write your message here</text>
+  <line x1="100" y1="200" x2="600" y2="200" stroke="#E5E5E5" stroke-width="2"/>
+  <line x1="100" y1="280" x2="600" y2="280" stroke="#E5E5E5" stroke-width="2"/>
+  <line x1="100" y1="360" x2="600" y2="360" stroke="#E5E5E5" stroke-width="2"/>
+  <line x1="100" y1="440" x2="600" y2="440" stroke="#E5E5E5" stroke-width="2"/>
+  <line x1="100" y1="520" x2="600" y2="520" stroke="#E5E5E5" stroke-width="2"/>
+  <line x1="100" y1="600" x2="600" y2="600" stroke="#E5E5E5" stroke-width="2"/>
+  <line x1="100" y1="680" x2="600" y2="680" stroke="#E5E5E5" stroke-width="2"/>
+  <line x1="100" y1="760" x2="600" y2="760" stroke="#E5E5E5" stroke-width="2"/>
+  <line x1="100" y1="840" x2="600" y2="840" stroke="#E5E5E5" stroke-width="2"/>
+</svg>

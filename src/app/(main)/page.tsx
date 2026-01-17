@@ -14,7 +14,7 @@ import {
   PantoneCard,
   PhotosCard,
   SketchbookCard,
-  SkewedStampsCard,
+  SkewedCardsCard,
   SneakPeekCard,
   StatusCard,
   ToolsCard,
@@ -52,7 +52,7 @@ const getCards = ({ sketchbookCard }: { sketchbookCard: boolean }) => [
   { gridArea: '💯', Component: BukaCard },
   { gridArea: '🧪', Component: CodeCard },
   { gridArea: '👩‍💻', Component: sketchbookCard ? SketchbookCard : ToolsCard },
-  { gridArea: '💌', Component: SkewedStampsCard },
+  { gridArea: '💌', Component: SkewedCardsCard },
   { gridArea: '📝', Component: NotesCard },
 ];
 

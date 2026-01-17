@@ -14,11 +14,12 @@ import { ReactLenis, useLenis } from 'lenis/react';
 import Link from 'next/link';
 import { useEffect, useRef, useState } from 'react';
 
-import Stamp1 from '~/public/home/stamps/stamp_1.svg';
-import Stamp2 from '~/public/home/stamps/stamp_2.svg';
-import Stamp3 from '~/public/home/stamps/stamp_3.svg';
-import Stamp4 from '~/public/home/stamps/stamp_4.svg';
-import Stamp5 from '~/public/home/stamps/stamp_5.svg';
+import Card1 from '~/public/cards/birthday-warm.svg';
+import Card2 from '~/public/cards/birthday-playful.svg';
+import Card3 from '~/public/cards/thankyou-elegant.svg';
+import Card4 from '~/public/cards/congratulations-minimal.svg';
+import Card5 from '~/public/cards/thinking-of-you.svg';
+import Card6 from '~/public/cards/holiday-festive.svg';
 import GridBackground from '~/src/components/GridBackground';
 import CardTitle from '~/src/components/ui/CardTitle';
 import useMatchMedia from '~/src/hooks/useMatchMedia';
@@ -148,11 +149,11 @@ export function SkewedCard({
   );
 }
 
-export function Stamps({ width, height }: { width: number; height: number }) {
+export function Cards({ width, height }: { width: number; height: number }) {
   const [activeIndex, setActiveIndex] = useState<number | null>(null);
-  const numCards = 10;
+  const numCards = 12;
 
-  const stamps = [Stamp1, Stamp2, Stamp3, Stamp4, Stamp5];
+  const cards = [Card1, Card2, Card3, Card4, Card5, Card6];
 
   return (
     <div className="relative h-full w-full">
@@ -168,25 +169,25 @@ export function Stamps({ width, height }: { width: number; height: number }) {
         <div className="h-[1000px] w-full" />
         <div className="absolute top-0 right-0 mx-auto flex h-full w-full flex-col items-center overflow-hidden rounded-lg">
           {Array.from({ length: numCards }).map((_, i) => {
-            const Stamp = stamps[i % stamps.length];
+            const CardSvg = cards[i % cards.length];
             return (
               <SkewedCard
                 activeIndex={activeIndex}
                 index={i}
                 count={numCards}
                 key={i}
-                width={150}
-                height={200}
+                width={140}
+                height={196}
                 containerWidth={width}
                 containerHeight={height}
                 onActivate={setActiveIndex}
                 className="flex items-center justify-center"
               >
-                <Stamp
+                <CardSvg
                   className={cn(
                     '[--background:var(--theme-3)] [--foreground-muted:var(--text-primary)]',
                     'in-[.theme-dark]:[--background:var(--theme-1)] in-[.theme-dark]:[--foreground-muted:var(--theme-3)] in-[.theme-dark]:[--foreground:var(--theme-3)] in-[.theme-dark]:[--outline:var(--theme-2)]',
-                    'h-auto w-[150px] drop-shadow-sm',
+                    'h-auto w-[140px] drop-shadow-sm',
                   )}
                 />
               </SkewedCard>
@@ -198,18 +199,18 @@ export function Stamps({ width, height }: { width: number; height: number }) {
   );
 }
 
-export default function SkewedStampsCard() {
+export default function SkewedCardsCard() {
   const { ref, dimensions } = useResizeRef<HTMLDivElement>();
 
   return (
-    <Card id="stamps">
+    <Card id="cards">
       <div className="flex flex-col gap-4">
         <CardTitle variant="mono">
           <Link
-            href="/stamps"
+            href="/cards"
             className="group flex w-full items-center justify-between gap-2 rounded-md"
           >
-            <span>Digital Stamp Collection</span>
+            <span>Card Collection</span>
             <ArrowRightIcon className="inline h-4 w-4" />
           </Link>
         </CardTitle>
@@ -218,12 +219,11 @@ export default function SkewedStampsCard() {
           ref={ref}
         >
           <GridBackground className="absolute top-0 left-0 h-full w-full" n={300} />
-          <Stamps width={dimensions.width} height={dimensions.height} />
+          <Cards width={dimensions.width} height={dimensions.height} />
         </div>
         <p className="text-text-primary text-sm">
-          Paying homage to my grandpa&apos;s lifelong passion for philately, by recreating his
-          stamps in a digital form, exploring the blend of art, history, and typography and bringing
-          it online for a new audience to enjoy.
+          Beautiful greeting cards for life&apos;s everyday moments. From birthdays to thank you
+          notes, find the perfect card for any occasion.
         </p>
       </div>
     </Card>

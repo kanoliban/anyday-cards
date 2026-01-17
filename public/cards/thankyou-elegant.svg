@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 350 490" width="350" height="490">
+  <rect width="350" height="490" fill="#FAFAF8" rx="8"/>
+  <rect x="30" y="30" width="290" height="430" fill="none" stroke="#2C2C2C" stroke-width="1" rx="2"/>
+  <line x1="50" y1="200" x2="300" y2="200" stroke="#2C2C2C" stroke-width="0.5"/>
+  <text x="175" y="260" text-anchor="middle" font-family="Didot, Georgia, serif" font-size="42" font-style="italic" fill="#2C2C2C">Thank You</text>
+  <line x1="50" y1="290" x2="300" y2="290" stroke="#2C2C2C" stroke-width="0.5"/>
+  <text x="175" y="400" text-anchor="middle" font-family="Didot, Georgia, serif" font-size="14" letter-spacing="4" fill="#666">WITH GRATITUDE</text>
+</svg>

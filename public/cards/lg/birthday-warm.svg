@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 700 980" width="700" height="980">
+  <defs>
+    <linearGradient id="warm" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#FFF5EB"/>
+      <stop offset="100%" style="stop-color:#FFE4CC"/>
+    </linearGradient>
+  </defs>
+  <rect width="700" height="980" fill="url(#warm)" rx="16"/>
+  <rect x="40" y="40" width="620" height="900" fill="none" stroke="#E8A87C" stroke-width="4" stroke-dasharray="8 8" rx="8"/>
+  <text x="350" y="400" text-anchor="middle" font-family="Georgia, serif" font-size="64" fill="#C4724E">Happy</text>
+  <text x="350" y="500" text-anchor="middle" font-family="Georgia, serif" font-size="80" font-weight="bold" fill="#C4724E">Birthday</text>
+  <circle cx="350" cy="700" r="80" fill="none" stroke="#E8A87C" stroke-width="4"/>
+  <text x="350" y="720" text-anchor="middle" font-family="Georgia, serif" font-size="48" fill="#C4724E">1</text>
+</svg>

@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 700 980" width="700" height="980">
+  <rect width="700" height="980" fill="#FFFFFF" rx="16"/>
+  <rect x="80" y="360" width="540" height="260" fill="#F5F5F5" rx="8"/>
+  <text x="350" y="460" text-anchor="middle" font-family="Helvetica Neue, Arial, sans-serif" font-size="28" letter-spacing="12" fill="#888">CONGRATULATIONS</text>
+  <text x="350" y="560" text-anchor="middle" font-family="Helvetica Neue, Arial, sans-serif" font-size="48" font-weight="300" fill="#333">You did it.</text>
+</svg>

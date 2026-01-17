@@ -1,0 +1,55 @@
+@reference "tailwindcss";
+
+.grain::before {
+  position: absolute;
+  right: 0;
+  top: 0;
+  content: '';
+  width: 100%;
+  height: 100%;
+  z-index: 2;
+  opacity: 20%;
+  filter: url(#paperFilter);
+  pointer-events: none;
+}
+
+.stamps-layout ::selection {
+  background: var(--color-stone-300);
+  color: var(--color-stone-600);
+}
+
+.stamps-layout ::-moz-selection {
+  background: #f6deb6;
+  color: #2d1c00;
+}
+
+.focus-dashed {
+  @apply rounded-[2px] focus-visible:outline-1 focus-visible:outline-stone-500 focus-visible:outline-dashed;
+}
+
+.shimmer-text {
+  background-clip: text;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-color: var(--shimmer-bg);
+  background-image: -webkit-gradient(
+    linear,
+    100% 0,
+    0 0,
+    from(var(--shimmer-bg)),
+    color-stop(0.5, var(--shimmer-fg)),
+    to(var(--shimmer-bg))
+  );
+  animation: shimmer-text 3s infinite;
+  background-repeat: no-repeat;
+  background-size: 50% 200%;
+}
+
+@keyframes shimmer-text {
+  0% {
+    background-position: -100% top;
+  }
+  100% {
+    background-position: 250% top;
+  }
+}
