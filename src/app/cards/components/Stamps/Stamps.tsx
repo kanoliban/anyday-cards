@@ -38,7 +38,7 @@ import DrawnInfo from './actions/info.svg';
 import DrawnOrganize from './actions/organize.svg';
 import DrawnShuffle from './actions/shuffle.svg';
 import DrawnZoom from './actions/zoom.svg';
-import { CardPurchasePanel } from './CardPurchasePanel';
+import CardPurchasePanel from './CardPurchasePanel';
 import { DoubleSidedCard } from './DoubleSidedCard';
 import Draggable, { DraggableController } from './Draggable';
 import { FeedbackDialog } from './Feedback';
@@ -811,7 +811,7 @@ export default function Cards({ className, ...props }: ComponentProps<typeof mot
                                 </div>
                                 <div className="w-full border-t border-dashed border-stone-300"></div>
                                 <div className="max-w-[100vw] p-5">
-                                  {selectedCard && <CardPurchasePanel card={selectedCard} />}
+                                  {selectedCard && <CardPurchasePanel />}
                                 </div>
                               </div>
                             </DrawerContent>
@@ -928,7 +928,7 @@ export default function Cards({ className, ...props }: ComponentProps<typeof mot
               <div className="mb-4 font-mono text-lg font-bold text-stone-700">
                 {selectedCard.name}
               </div>
-              <CardPurchasePanel card={selectedCard} />
+              <CardPurchasePanel />
             </motion.div>
           )}
         </AnimatePresence>
