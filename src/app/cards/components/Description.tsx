@@ -7,8 +7,11 @@ import FocusLock from 'react-focus-lock';
 
 import { cn } from '~/src/util';
 
+import CartButton from '../../(main)/shop/components/CartButton';
+import { collections } from '../constants';
+import { Card } from '../models';
 import { useCardStore } from '../store';
-import { WizardShell } from '../wizard';
+import CardWizard from './CardWizard';
 import EmptyState from './EmptyState';
 import MetadataTable from './MetadataTable';
 
@@ -99,9 +102,15 @@ const fadeInProps: MotionProps = {
 
 export default function Description({ className }: { className?: string }) {
   const selectedCardId = useCardStore((s) => s.selectedCardId);
+  const collection = useCardStore((s) => s.collection);
   const wizardMode = useCardStore((s) => s.wizardMode);
+  const setWizardMode = useCardStore((s) => s.setWizardMode);
   const [animate, setAnimate] = useState(false);
   const [animated, setAnimated] = useState(false);
+
+  const card = selectedCardId
+    ? (collections[collection].cards.find((c) => c.id === selectedCardId) as Card)
+    : null;
 
   useEffect(() => {
     if (selectedCardId) {
@@ -112,35 +121,37 @@ export default function Description({ className }: { className?: string }) {
 
   return (
     <div className={cn('flex flex-col gap-5 font-libertinus text-stone-700 lg:gap-9', className)}>
-      <motion.nav
+      <motion.div
         {...fadeInProps}
         transition={{ duration: 0.35, delay: 1.5 }}
-        className={cn('relative')}
-        aria-label="Breadcrumb"
+        className="flex items-center justify-between"
       >
-        <ul className="text-s group/nav flex items-center tracking-tight text-stone-600">
-          <li>
-            <Link
-              href="/"
-              className="focus-dashed flex items-baseline gap-1 px-1 hover:text-stone-800"
-            >
-              <span>anydaycard</span>
-            </Link>
-          </li>
-          <li aria-hidden="true" className="text-stone-600 group-focus-within/nav:opacity-0">
-            /
-          </li>
-          <li>
-            <Link
-              href="/cards"
-              aria-current="page"
-              className="focus-dashed flex items-baseline gap-1 px-1 text-stone-600 hover:text-stone-800"
-            >
-              <span>card collection</span>
-            </Link>
-          </li>
-        </ul>
-      </motion.nav>
+        <nav className={cn('relative')} aria-label="Breadcrumb">
+          <ul className="text-s group/nav flex items-center tracking-tight text-stone-600">
+            <li>
+              <Link
+                href="/"
+                className="focus-dashed flex items-baseline gap-1 px-1 hover:text-stone-800"
+              >
+                <span>anydaycard</span>
+              </Link>
+            </li>
+            <li aria-hidden="true" className="text-stone-600 group-focus-within/nav:opacity-0">
+              /
+            </li>
+            <li>
+              <Link
+                href="/cards"
+                aria-current="page"
+                className="focus-dashed flex items-baseline gap-1 px-1 text-stone-600 hover:text-stone-800"
+              >
+                <span>card collection</span>
+              </Link>
+            </li>
+          </ul>
+        </nav>
+        <CartButton />
+      </motion.div>
       <h1>
         <AnimatedText
           text="Cards for any day"
@@ -194,10 +205,14 @@ export default function Description({ className }: { className?: string }) {
           onAnimationComplete={() => setAnimate(true)}
         >
           <AnimatePresence mode="popLayout" initial={false}>
-            {wizardMode && selectedCardId ? (
-              <motion.div key="wizard-shell" {...fadeInProps}>
+            {wizardMode && card ? (
+              <motion.div key="wizard" {...fadeInProps}>
                 <FocusLock group={`wizard-${selectedCardId}`}>
-                  <WizardShell className="font-sans" />
+                  <CardWizard
+                    card={card}
+                    onComplete={() => setWizardMode(false)}
+                    onBack={() => setWizardMode(false)}
+                  />
                 </FocusLock>
               </motion.div>
             ) : selectedCardId ? (

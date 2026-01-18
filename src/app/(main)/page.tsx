@@ -30,15 +30,10 @@ import { Metadata } from 'next';
 import SystemMetricsCollector from '~/src/lib/SystemMetricsCollector';
 import { withTimeout } from '~/src/util';
 
-import { Filter } from './work/constants';
-
-type FilterHref = `/work?f=${Filter}`;
-
-const projectLinks: Array<{ label: string; href: FilterHref }> = [
-  { label: 'Branding', href: '/work?f=branding' },
-  { label: 'Digital', href: '/work?f=digital' },
-  { label: 'Illustration', href: '/work?f=illustration' },
-];
+const ctaLinks = [
+  { label: 'Browse Cards', href: '/work' },
+  { label: 'Shop Now', href: '/shop' },
+] as const;
 
 const getCards = ({ sketchbookCard }: { sketchbookCard: boolean }) => [
   { gridArea: '👋', Component: BioCard },
@@ -66,12 +61,17 @@ const fetchSneakPeekCount = ({ timeout = 1000 }) => {
       ]),
     { cache: 'no-store' },
   )
-    .then((res) => res.json())
-    .then((res) => res.count)
-    .catch((e) => {
-      console.error(e);
-      return 0;
-    });
+    .then(async (res) => {
+      if (!res.ok) return 0;
+      const text = await res.text();
+      if (!text) return 0;
+      try {
+        return JSON.parse(text).count ?? 0;
+      } catch {
+        return 0;
+      }
+    })
+    .catch(() => 0);
 
   return withTimeout(responsePromise, 0, timeout);
 };
@@ -90,9 +90,9 @@ const fetchSystemMetrics = ({ timeout = 1000 }) => {
 };
 
 export const metadata: Metadata = {
-  title: 'AnyDayCard | Thoughtfully Designed Greeting Cards',
+  title: 'anydaycard | Thoughtful cards, any occasion',
   description:
-    'Discover beautifully crafted greeting cards for every occasion. Premium paper stock, timeless designs, available as physical prints or digital downloads.',
+    'AI-generated greeting cards for every occasion. Premium paper, timeless designs, available as physical prints or digital downloads.',
 };
 
 export default async function Home() {
@@ -110,12 +110,12 @@ export default async function Home() {
       <div className="flex flex-col px-5 py-5 md:py-12">
         <main className="pb-12">
           <Heading className="mb-8" />
-          <div className="mb-20 flex flex-col items-start gap-2 text-text-primary xxs:flex-row xxs:items-center xxs:gap-4">
-            <div>What I do</div>
+          <div className="mb-20 flex flex-col items-start gap-3 text-text-primary xxs:flex-row xxs:items-center xxs:gap-4">
+            <p className="text-lg text-text-secondary">AI-generated designs, premium paper</p>
             <div className="flex gap-2">
-              {projectLinks.map(({ label, ...linkProps }) => (
+              {ctaLinks.map(({ label, href }) => (
                 <Button size="sm" asChild key={label}>
-                  <Link {...linkProps}>{label}</Link>
+                  <Link href={href}>{label}</Link>
                 </Button>
               ))}
             </div>

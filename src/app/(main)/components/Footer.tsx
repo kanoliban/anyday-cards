@@ -31,15 +31,7 @@ export default function Footer({ children }: { children?: ReactNode }) {
           </span>
         </div>
 
-        <div className="text-xs">
-          See code on{' '}
-          <a
-            href="https://github.com/buka-studio/www-marijanasimag"
-            className="rounded-sm underline"
-          >
-            GitHub
-          </a>
-        </div>
+        <div className="text-xs">© anydaycard</div>
       </footer>
     </>
   );

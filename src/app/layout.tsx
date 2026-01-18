@@ -31,9 +31,10 @@ const libertinusSerif = Libertinus_Serif({
 });
 
 export const metadata: Metadata = {
-  title: "Marijana Pavlinić's Personal Website",
+  title: 'anydaycard - Cards for any day',
+  description: 'AI-generated greeting cards for every occasion. Buy as-is or customize with our wizard.',
   metadataBase:
-    process.env.NODE_ENV === 'production' ? new URL('https://marijanapav.com') : undefined,
+    process.env.NODE_ENV === 'production' ? new URL('https://anydaycard.com') : undefined,
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

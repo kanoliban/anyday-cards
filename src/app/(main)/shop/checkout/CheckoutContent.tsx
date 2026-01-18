@@ -3,12 +3,13 @@
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
-import { ArrowLeft, Loader2, ShoppingBag } from 'lucide-react';
+import { ArrowLeft, Loader2, ShoppingBag, Sparkles } from 'lucide-react';
 
 import Button from '~/src/components/ui/Button';
 import Heading from '~/src/components/ui/Heading';
 import Image from '~/src/components/ui/Image';
 
+import { getItemPrice } from '../models';
 import { useCartStore } from '../store';
 
 function formatPrice(price: number): string {
@@ -51,6 +52,7 @@ export default function CheckoutContent() {
             cardId: item.card.id,
             variant: item.variant,
             quantity: item.quantity,
+            ...(item.customization && { customization: item.customization }),
           })),
         }),
       });
@@ -85,11 +87,11 @@ export default function CheckoutContent() {
       <Heading className="mb-8 text-2xl md:text-3xl">Review Your Order</Heading>
 
       <div className="mb-8 divide-y rounded-lg border border-panel-border bg-panel">
-        {items.map((item) => {
-          const itemTotal = item.card.pricing[item.variant] * item.quantity;
+        {items.map((item, index) => {
+          const itemTotal = getItemPrice(item);
           return (
             <div
-              key={`${item.card.id}-${item.variant}`}
+              key={item.customization ? `custom-${index}` : `${item.card.id}-${item.variant}`}
               className="flex gap-4 p-4"
             >
               <div className="relative size-20 shrink-0 overflow-hidden rounded-md bg-stone-100">
@@ -103,12 +105,25 @@ export default function CheckoutContent() {
               </div>
               <div className="flex flex-1 flex-col justify-between">
                 <div>
-                  <h4 className="font-medium text-text-primary">
-                    {item.card.name}
-                  </h4>
+                  <div className="flex items-center gap-2">
+                    <h4 className="font-medium text-text-primary">
+                      {item.card.name}
+                    </h4>
+                    {item.customization && (
+                      <span className="inline-flex items-center gap-1 rounded-full bg-amber-100 px-2 py-0.5 text-xs font-medium text-amber-700">
+                        <Sparkles className="size-3" />
+                        Personalized
+                      </span>
+                    )}
+                  </div>
                   <p className="text-sm capitalize text-text-secondary">
                     {item.variant} × {item.quantity}
                   </p>
+                  {item.customization && (
+                    <p className="text-xs text-text-secondary">
+                      For {item.customization.recipientName}
+                    </p>
+                  )}
                 </div>
                 <p className="font-medium tabular-nums text-text-primary">
                   {formatPrice(itemTotal)}

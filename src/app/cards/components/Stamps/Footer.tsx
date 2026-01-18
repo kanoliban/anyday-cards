@@ -64,8 +64,7 @@ export function Footer({
       )}
     >
       <div className="mr-auto hidden items-center gap-2 font-mono lg:flex">
-        Leuchtturm <SmileyIcon className="hidden h-4 w-4 lg:block" weight="bold" />{' '}
-        <span className="hidden lg:block">G-System</span>
+        <SmileyIcon className="hidden h-4 w-4 lg:block" weight="bold" /> © anydaycard
       </div>
       {children}
       <div className="ml-auto hidden items-center gap-2 lg:flex">

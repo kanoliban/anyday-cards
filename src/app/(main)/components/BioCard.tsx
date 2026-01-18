@@ -1,11 +1,10 @@
 import Link from 'next/link';
 
-import PortraitSrc from '~/public/home/me.jpg';
 import { ArrowRightIcon, InstagramIcon } from '~/src/components/icons';
 import Button from '~/src/components/ui/Button';
-import Image from '~/src/components/ui/Image';
 
 import Card from './Card';
+import MiniCanvas from './MiniCanvas';
 
 import './cards.css';
 
@@ -20,18 +19,7 @@ const social = [
 export default function BrandStoryCard() {
   return (
     <Card className="flex flex-1 flex-col gap-4 bg-panel-background">
-      <div className="relative">
-        <Image
-          alt="Handcrafted greeting cards"
-          src={PortraitSrc}
-          placeholder="blur"
-          className="h-full w-full rounded-md object-cover object-top"
-          loading="eager"
-          sizes="(max-width: 768px) 100vw, 768px"
-          priority
-        />
-        <div className="absolute left-0 top-0 h-full w-full rounded-md bg-panel-overlay transition-colors duration-200" />
-      </div>
+      <MiniCanvas />
 
       <p className="panel text-sm leading-6 text-text-primary">
         AnyDayCard started from a simple belief: the right card at the right moment matters. We

@@ -122,7 +122,7 @@ export default function Description({ className }: { className?: string }) {
               href="/"
               className="focus-dashed flex items-baseline gap-1 px-1 hover:text-stone-800"
             >
-              <span>marijanapav</span>
+              <span>anydaycard</span>
             </Link>
           </li>
           <li aria-hidden="true" className="text-stone-600 group-focus-within/nav:opacity-0">
@@ -141,7 +141,7 @@ export default function Description({ className }: { className?: string }) {
       </motion.nav>
       <h1>
         <AnimatedText
-          text="The weight of paper"
+          text="Digital stamp collection"
           className="text-3xl tracking-tight lg:text-[2.5rem]"
         />{' '}
       </h1>
@@ -162,16 +162,13 @@ export default function Description({ className }: { className?: string }) {
         className="flex flex-col gap-5 lg:gap-5"
       >
         <motion.p variants={slideInVariants} className="text-pretty">
-          Paying homage to my grandpa&apos;s lifelong passion for philately, by recreating his
-          stamps in a digital form, exploring the blend of art, history, and typography and bringing
-          it online for a new audience to enjoy.
+          Exploring the blend of art, history, and typography through digital recreations of classic
+          stamps. Each piece celebrates the enduring craft of stamp design.
         </motion.p>
 
-        <motion.p variants={slideInVariants} className="text-prety">
-          Each stamp tells a story of a piece of history, a moment in time. Some recreations are
-          inspired by the stamps I have in my family&apos;s archive, and some by global finds I
-          stumbled upon. Together, they celebrate the enduring craft of stamp design — and the
-          stories that linger in a miniature piece of <span className="italic">paper</span>.
+        <motion.p variants={slideInVariants} className="text-pretty">
+          These recreations are inspired by philatelic treasures from around the world — celebrating
+          the stories that linger in miniature works of <span className="italic">art</span>.
         </motion.p>
 
         <motion.div

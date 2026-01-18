@@ -6,7 +6,7 @@ import HighlightedText, { Controls } from '~/src/components/HighlightedHeading';
 import Heading from '~/src/components/ui/Heading';
 import { cn } from '~/src/util';
 
-const lines = ['Designer crafting', ' brands and websites', ''];
+const lines = ['Thoughtful cards,', ' any occasion', ''];
 
 const staggerMs = 300;
 

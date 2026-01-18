@@ -6,19 +6,13 @@ import ViewLogger from '~/src/components/ViewCounter';
 
 import Header from '../components/Header';
 
-const links = [
-  { label: 'Twitter', href: 'https://twitter.com/marijanapav' },
+const links: { label: string; href: string }[] = [];
 
-  { label: 'GitHub', href: 'https://www.github.com/marijanapav' },
-  { label: 'Bluesky', href: 'https://bsky.app/profile/marijanapav.com' },
-  { label: 'LinkedIn', href: 'https://www.linkedin.com/in/marijana-pavlinic/' },
-];
-
-const email = 'marijana@buka.studio';
+const email = 'hello@anydaycard.com';
 
 export const metadata: Metadata = {
-  title: 'Contact | Marijana Pavlinić',
-  description: 'Reach out to say hi or talk future projects.',
+  title: 'Contact | anydaycard',
+  description: 'Get in touch with anydaycard.',
 };
 
 export default function Contact() {
@@ -28,13 +22,13 @@ export default function Contact() {
       <ViewLogger pathname="/contact" />
       <main className="flex flex-1 flex-col px-11 py-8">
         <div className="flex flex-1 flex-col items-center justify-center text-text-primary">
-          <h1>Say hi or talk future projects</h1>
+          <h1>Get in touch</h1>
           <div className="mb-[100px] flex flex-col items-center gap-6 text-center md:mb-8 md:flex-row ">
             <a
-              href="mailto:marijana@buka.studio"
+              href="mailto:hello@anydaycard.com"
               className="rounded-lg font-archivo text-[clamp(2.25rem,2vw+1rem,3.75rem)]"
             >
-              marijana@buka.studio
+              hello@anydaycard.com
             </a>
           </div>
 

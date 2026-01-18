@@ -52,10 +52,11 @@ export default function CartDrawer() {
             </div>
           ) : (
             <div className="divide-y">
-              {items.map((item) => (
+              {items.map((item, index) => (
                 <CartItemRow
-                  key={`${item.card.id}-${item.variant}`}
+                  key={item.customization ? `custom-${index}` : `${item.card.id}-${item.variant}`}
                   item={item}
+                  index={index}
                 />
               ))}
             </div>

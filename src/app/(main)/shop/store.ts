@@ -3,7 +3,7 @@ import { persist } from 'zustand/middleware';
 
 import type { Card, CardVariant } from '~/src/app/cards/models';
 
-import { CartItem, getCartItemKey, getItemPrice } from './models';
+import { CardCustomization, CartItem, getCartItemKey, getItemPrice } from './models';
 
 type CartState = {
   items: CartItem[];
@@ -11,9 +11,20 @@ type CartState = {
 };
 
 type CartActions = {
-  addItem: (card: Card, variant: CardVariant, quantity?: number) => void;
-  removeItem: (cardId: string, variant: CardVariant) => void;
-  updateQuantity: (cardId: string, variant: CardVariant, quantity: number) => void;
+  addItem: (
+    card: Card,
+    variant: CardVariant,
+    quantity?: number,
+    customization?: CardCustomization,
+  ) => void;
+  removeItem: (cardId: string, variant: CardVariant, customization?: CardCustomization) => void;
+  updateQuantity: (
+    cardId: string,
+    variant: CardVariant,
+    quantity: number,
+    customization?: CardCustomization,
+  ) => void;
+  setItems: (items: CartItem[]) => void;
   clearCart: () => void;
   setOpen: (open: boolean) => void;
   getItemCount: () => number;
@@ -28,11 +39,19 @@ export const useCartStore = create<CartStore>()(
       items: [],
       isOpen: false,
 
-      addItem: (card, variant, quantity = 1) => {
+      addItem: (card, variant, quantity = 1, customization) => {
         set((state) => {
+          // Customized cards are always unique (never stack)
+          if (customization) {
+            return {
+              items: [...state.items, { card, variant, quantity, customization }],
+            };
+          }
+
+          // Non-customized cards can stack
           const key = getCartItemKey(card.id, variant);
           const existingIndex = state.items.findIndex(
-            (item) => getCartItemKey(item.card.id, item.variant) === key
+            (item) => !item.customization && getCartItemKey(item.card.id, item.variant) === key,
           );
 
           if (existingIndex >= 0) {
@@ -74,6 +93,8 @@ export const useCartStore = create<CartStore>()(
       },
 
       clearCart: () => set({ items: [] }),
+
+      setItems: (items) => set({ items }),
 
       setOpen: (open) => set({ isOpen: open }),
 

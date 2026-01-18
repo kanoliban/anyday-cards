@@ -8,11 +8,13 @@ interface CardStore {
   collection: CollectionType;
   isZoomed: boolean;
   zoomEnabled: boolean;
+  wizardMode: boolean;
   toggleZoomed: () => void;
   setZoomed: (zoomed: boolean) => void;
   setSelectedCardId: (selectedCardId: string) => void;
   setZoomEnabled: (zoomEnabled: boolean) => void;
   setCollection: (collection: CollectionType) => void;
+  setWizardMode: (wizardMode: boolean) => void;
   reset: () => void;
   cardsDrawerOpen: boolean;
   setCardsDrawerOpen: (cardsDrawerOpen: boolean) => void;
@@ -33,20 +35,22 @@ export const useCardStore = create<CardStore>((set) => ({
   collection: 'celebrations' as CollectionType,
   isZoomed: false,
   zoomEnabled: false,
+  wizardMode: false,
   toggleZoomed: (force?: boolean) => {
     set((state) => ({ isZoomed: force !== undefined ? force : !state.isZoomed }));
   },
   setZoomed: (zoomed: boolean) => set({ isZoomed: zoomed }),
-  setSelectedCardId: (selectedCardId: string) => set({ selectedCardId }),
+  setSelectedCardId: (selectedCardId: string) => set({ selectedCardId, wizardMode: false }),
   setZoomEnabled: (zoomEnabled: boolean) => set({ zoomEnabled }),
   setCollection: (collection: CollectionType) => {
-    set({ collection, selectedCardId: '' });
+    set({ collection, selectedCardId: '', wizardMode: false });
   },
-  reset: () => set({ isZoomed: false, zoomEnabled: false, selectedCardId: '' }),
+  setWizardMode: (wizardMode: boolean) => set({ wizardMode }),
+  reset: () => set({ isZoomed: false, zoomEnabled: false, selectedCardId: '', wizardMode: false }),
   cardsDrawerOpen: false,
   setCardsDrawerOpen: (state: boolean) => {
     if (!state) {
-      set({ cardsDrawerOpen: false, isZoomed: false, zoomEnabled: false, selectedCardId: '' });
+      set({ cardsDrawerOpen: false, isZoomed: false, zoomEnabled: false, selectedCardId: '', wizardMode: false });
     } else {
       set({ cardsDrawerOpen: true });
     }

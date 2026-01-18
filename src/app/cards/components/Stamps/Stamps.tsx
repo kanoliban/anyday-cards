@@ -38,7 +38,7 @@ import DrawnInfo from './actions/info.svg';
 import DrawnOrganize from './actions/organize.svg';
 import DrawnShuffle from './actions/shuffle.svg';
 import DrawnZoom from './actions/zoom.svg';
-import { CardPurchasePanel } from './CardPurchasePanel';
+import CardPurchasePanel from './CardPurchasePanel';
 import { DoubleSidedCard } from './DoubleSidedCard';
 import Draggable, { DraggableController } from './Draggable';
 import { FeedbackDialog } from './Feedback';
@@ -127,7 +127,6 @@ export default function Cards({ className, ...props }: ComponentProps<typeof mot
   const collectionKey = useCardStore((s) => s.collection);
   const setZoomEnabled = useCardStore((s) => s.setZoomEnabled);
   const setSelectedCardId = useCardStore((s) => s.setSelectedCardId);
-  const wizardMode = useCardStore((s) => s.wizardMode);
 
   const collection = collections[collectionKey];
   const cards: Card[] = collection.cards;
@@ -810,6 +809,10 @@ export default function Cards({ className, ...props }: ComponentProps<typeof mot
                                 <div className="max-w-[100vw] p-5">
                                   {selectedCard && <MetadataTable />}
                                 </div>
+                                <div className="w-full border-t border-dashed border-stone-300"></div>
+                                <div className="max-w-[100vw] p-5">
+                                  {selectedCard && <CardPurchasePanel />}
+                                </div>
                               </div>
                             </DrawerContent>
                           </Drawer>
@@ -897,7 +900,7 @@ export default function Cards({ className, ...props }: ComponentProps<typeof mot
           </AnimatePresence>
         </div>
         {selectedCard && (
-          <FocusLock disabled={!store.isZoomed} returnFocus>
+          <FocusLock disabled={!store.isZoomed || drawerOpen} returnFocus>
             <Loupe
               gridCellSize={gridCellSize}
               className={cn({
@@ -911,12 +914,22 @@ export default function Cards({ className, ...props }: ComponentProps<typeof mot
             />
           </FocusLock>
         )}
+
+        {/* Desktop purchase sidebar */}
         <AnimatePresence>
-          {selectedCard && !wizardMode && (
-            <CardPurchasePanel
-              card={selectedCard}
-              className="absolute right-4 bottom-4 z-50"
-            />
+          {selectedCard && !isMobile && (
+            <motion.div
+              initial={{ opacity: 0, x: 20 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: 20 }}
+              transition={{ type: 'spring', stiffness: 300, damping: 30 }}
+              className="pointer-events-auto absolute right-6 bottom-6 z-40 hidden w-72 rounded-lg border border-stone-300 bg-stone-100 p-5 shadow-lg lg:block"
+            >
+              <div className="mb-4 font-mono text-lg font-bold text-stone-700">
+                {selectedCard.name}
+              </div>
+              <CardPurchasePanel />
+            </motion.div>
           )}
         </AnimatePresence>
       </div>
