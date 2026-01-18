@@ -39,3 +39,94 @@ export type CardCollection = {
   };
   cards: Card[];
 };
+
+// Wizard types
+export type WizardStep =
+  | 'name'
+  | 'relationship'
+  | 'occasion'
+  | 'vibe'
+  | 'humorType'
+  | 'heartfeltDepth'
+  | 'relationshipQuestions'
+  | 'quickTraits'
+  | 'preview';
+
+export type RelationshipType =
+  | 'partner'
+  | 'friend'
+  | 'parent'
+  | 'child'
+  | 'sibling'
+  | 'professional'
+  | 'dating'
+  | 'grandparent'
+  | 'other';
+
+export type VibeType =
+  | 'funny'
+  | 'heartfelt'
+  | 'spicy'
+  | 'weird'
+  | 'grateful'
+  | 'nostalgic'
+  | 'encouraging'
+  | 'apologetic'
+  | 'proud'
+  | 'playful';
+
+export type OccasionType =
+  | 'birthday'
+  | 'anniversary'
+  | 'holiday'
+  | 'support'
+  | 'achievement'
+  | 'miss'
+  | 'justBecause'
+  | 'apology'
+  | 'thanks'
+  | 'congratulations';
+
+export type HumorType =
+  | 'insideJokes'
+  | 'playfulTeasing'
+  | 'absurdist'
+  | 'dryDeadpan'
+  | 'selfDeprecating'
+  | 'wholesomeSilly';
+
+export type HeartfeltDepth = 'warmLight' | 'feelSeen' | 'mightCry';
+
+export type QuickTrait =
+  | 'dogPerson'
+  | 'catPerson'
+  | 'coffeeAddict'
+  | 'teaDrinker'
+  | 'gymRat'
+  | 'hatesMornings'
+  | 'alwaysLate'
+  | 'plantParent'
+  | 'gamer'
+  | 'bookworm'
+  | 'foodie'
+  | 'homebody'
+  | 'overthinker'
+  | 'crierAtMovies'
+  | 'neatFreak'
+  | 'creativeMess'
+  | 'workaholic'
+  | 'adventureSeeker'
+  | 'introvert'
+  | 'lifeOfTheParty';
+
+export interface WizardAnswers {
+  name: string;
+  relationshipType: RelationshipType;
+  occasion: OccasionType;
+  vibes: VibeType[];
+  humorType?: HumorType;
+  heartfeltDepth?: HeartfeltDepth;
+  quickTraits: QuickTrait[];
+  // Relationship-specific fields (dynamic)
+  [key: string]: string | string[] | undefined;
+}

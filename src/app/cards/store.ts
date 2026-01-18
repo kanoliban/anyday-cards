@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 
 import { CollectionType } from './constants';
+import type { WizardAnswers, WizardStep } from './models';
 
 interface CardStore {
   selectedCardId: string;
@@ -15,6 +16,16 @@ interface CardStore {
   reset: () => void;
   cardsDrawerOpen: boolean;
   setCardsDrawerOpen: (cardsDrawerOpen: boolean) => void;
+
+  // Wizard state
+  wizardMode: boolean;
+  wizardStep: WizardStep;
+  wizardAnswers: Partial<WizardAnswers>;
+  setWizardMode: (mode: boolean) => void;
+  setWizardStep: (step: WizardStep) => void;
+  setWizardAnswer: <K extends keyof WizardAnswers>(key: K, value: WizardAnswers[K]) => void;
+  resetWizard: () => void;
+  startWizard: () => void;
 }
 
 export const useCardStore = create<CardStore>((set) => ({
@@ -40,4 +51,27 @@ export const useCardStore = create<CardStore>((set) => ({
       set({ cardsDrawerOpen: true });
     }
   },
+
+  // Wizard state
+  wizardMode: false,
+  wizardStep: 'name',
+  wizardAnswers: {},
+  setWizardMode: (mode: boolean) => set({ wizardMode: mode }),
+  setWizardStep: (step: WizardStep) => set({ wizardStep: step }),
+  setWizardAnswer: (key, value) =>
+    set((state) => ({
+      wizardAnswers: { ...state.wizardAnswers, [key]: value },
+    })),
+  resetWizard: () =>
+    set({
+      wizardMode: false,
+      wizardStep: 'name',
+      wizardAnswers: {},
+    }),
+  startWizard: () =>
+    set({
+      wizardMode: true,
+      wizardStep: 'name',
+      wizardAnswers: {},
+    }),
 }));

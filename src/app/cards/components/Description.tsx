@@ -8,6 +8,7 @@ import FocusLock from 'react-focus-lock';
 import { cn } from '~/src/util';
 
 import { useCardStore } from '../store';
+import { WizardShell } from '../wizard';
 import EmptyState from './EmptyState';
 import MetadataTable from './MetadataTable';
 
@@ -98,6 +99,7 @@ const fadeInProps: MotionProps = {
 
 export default function Description({ className }: { className?: string }) {
   const selectedCardId = useCardStore((s) => s.selectedCardId);
+  const wizardMode = useCardStore((s) => s.wizardMode);
   const [animate, setAnimate] = useState(false);
   const [animated, setAnimated] = useState(false);
 
@@ -192,7 +194,13 @@ export default function Description({ className }: { className?: string }) {
           onAnimationComplete={() => setAnimate(true)}
         >
           <AnimatePresence mode="popLayout" initial={false}>
-            {selectedCardId ? (
+            {wizardMode && selectedCardId ? (
+              <motion.div key="wizard-shell" {...fadeInProps}>
+                <FocusLock group={`wizard-${selectedCardId}`}>
+                  <WizardShell className="font-sans" />
+                </FocusLock>
+              </motion.div>
+            ) : selectedCardId ? (
               <motion.div key="metadata-table" {...fadeInProps}>
                 <FocusLock group={`card-${selectedCardId}`}>
                   <MetadataTable />

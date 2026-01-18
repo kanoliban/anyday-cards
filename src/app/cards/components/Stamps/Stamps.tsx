@@ -38,6 +38,7 @@ import DrawnInfo from './actions/info.svg';
 import DrawnOrganize from './actions/organize.svg';
 import DrawnShuffle from './actions/shuffle.svg';
 import DrawnZoom from './actions/zoom.svg';
+import { CardPurchasePanel } from './CardPurchasePanel';
 import { DoubleSidedCard } from './DoubleSidedCard';
 import Draggable, { DraggableController } from './Draggable';
 import { FeedbackDialog } from './Feedback';
@@ -126,6 +127,7 @@ export default function Cards({ className, ...props }: ComponentProps<typeof mot
   const collectionKey = useCardStore((s) => s.collection);
   const setZoomEnabled = useCardStore((s) => s.setZoomEnabled);
   const setSelectedCardId = useCardStore((s) => s.setSelectedCardId);
+  const wizardMode = useCardStore((s) => s.wizardMode);
 
   const collection = collections[collectionKey];
   const cards: Card[] = collection.cards;
@@ -909,6 +911,14 @@ export default function Cards({ className, ...props }: ComponentProps<typeof mot
             />
           </FocusLock>
         )}
+        <AnimatePresence>
+          {selectedCard && !wizardMode && (
+            <CardPurchasePanel
+              card={selectedCard}
+              className="absolute right-4 bottom-4 z-50"
+            />
+          )}
+        </AnimatePresence>
       </div>
       <p id="cards-navigation-help" className="sr-only">
         Use Left/Right/Up/Down to move focus between cards. Home jumps to the first, End to the
