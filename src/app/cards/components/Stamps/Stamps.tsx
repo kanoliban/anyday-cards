@@ -923,11 +923,8 @@ export default function Cards({ className, ...props }: ComponentProps<typeof mot
               animate={{ opacity: 1, x: 0 }}
               exit={{ opacity: 0, x: 20 }}
               transition={{ type: 'spring', stiffness: 300, damping: 30 }}
-              className="pointer-events-auto absolute right-6 bottom-6 z-40 hidden w-72 rounded-lg border border-stone-300 bg-stone-100 p-5 shadow-lg lg:block"
+              className="pointer-events-auto absolute right-6 bottom-6 z-40 hidden w-72 lg:block"
             >
-              <div className="mb-4 font-mono text-lg font-bold text-stone-700">
-                {selectedCard.name}
-              </div>
               <CardPurchasePanel />
             </motion.div>
           )}

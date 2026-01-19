@@ -1,11 +1,18 @@
 'use client';
 
 import { AnimatePresence, motion } from 'framer-motion';
+import {
+  Calendar,
+  Heart,
+  MessageSquare,
+  Palette,
+  Sparkles,
+  User,
+} from 'lucide-react';
 import { useMemo } from 'react';
 
 import { cn } from '~/src/util';
 
-import type { WizardAnswers } from '../models';
 import { useCardStore } from '../store';
 import {
   heartfeltDepthOptions,
@@ -24,7 +31,7 @@ type AnswerItem = {
   key: string;
   label: string;
   value: string;
-  emoji?: string;
+  icon: React.ReactNode;
 };
 
 export default function AnswerSummary({ className }: Props) {
@@ -40,6 +47,7 @@ export default function AnswerSummary({ className }: Props) {
         key: 'name',
         label: 'For',
         value: wizardAnswers.name,
+        icon: <User className="size-3.5" />,
       });
     }
 
@@ -53,7 +61,7 @@ export default function AnswerSummary({ className }: Props) {
           key: 'relationship',
           label: 'Relationship',
           value: option.label,
-          emoji: option.emoji,
+          icon: <Heart className="size-3.5" />,
         });
       }
     }
@@ -66,7 +74,7 @@ export default function AnswerSummary({ className }: Props) {
           key: 'occasion',
           label: 'Occasion',
           value: option.label,
-          emoji: option.emoji,
+          icon: <Calendar className="size-3.5" />,
         });
       }
     }
@@ -82,21 +90,7 @@ export default function AnswerSummary({ className }: Props) {
           key: 'vibes',
           label: 'Vibe',
           value: selectedVibes.map((v) => v!.label).join(' + '),
-          emoji: selectedVibes[0]?.emoji,
-        });
-      }
-    }
-
-    // Humor type
-    if (wizardAnswers.humorType) {
-      const option = humorTypeOptions.find(
-        (o) => o.value === wizardAnswers.humorType
-      );
-      if (option) {
-        result.push({
-          key: 'humorType',
-          label: 'Humor',
-          value: option.label,
+          icon: <Palette className="size-3.5" />,
         });
       }
     }
@@ -111,13 +105,30 @@ export default function AnswerSummary({ className }: Props) {
           key: 'heartfeltDepth',
           label: 'Depth',
           value: option.label,
+          icon: <Sparkles className="size-3.5" />,
         });
       }
     }
 
-    // Quick traits
+    // Humor type
+    if (wizardAnswers.humorType) {
+      const option = humorTypeOptions.find(
+        (o) => o.value === wizardAnswers.humorType
+      );
+      if (option) {
+        result.push({
+          key: 'humorType',
+          label: 'Humor',
+          value: option.label,
+          icon: <MessageSquare className="size-3.5" />,
+        });
+      }
+    }
+
+    // Quick traits (limit to 3)
     if (wizardAnswers.quickTraits && (wizardAnswers.quickTraits as string[]).length > 0) {
       const selectedTraits = (wizardAnswers.quickTraits as string[])
+        .slice(0, 3)
         .map((t) => quickTraitOptions.find((o) => o.value === t))
         .filter(Boolean);
 
@@ -126,6 +137,7 @@ export default function AnswerSummary({ className }: Props) {
           key: 'quickTraits',
           label: 'Traits',
           value: selectedTraits.map((t) => t!.label).join(', '),
+          icon: <MessageSquare className="size-3.5" />,
         });
       }
     }
@@ -142,34 +154,40 @@ export default function AnswerSummary({ className }: Props) {
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
       className={cn(
-        'rounded-xl border border-stone-200 bg-white/80 p-4 backdrop-blur-sm',
+        'border-t border-stone-200 bg-stone-50 px-4 py-3',
         className
       )}
     >
-      <h3 className="mb-3 text-xs font-semibold uppercase tracking-wide text-stone-500">
-        Building your card
-      </h3>
-      <div className="flex flex-wrap gap-2">
-        <AnimatePresence mode="popLayout">
-          {items.map((item) => (
-            <motion.div
-              key={item.key}
-              initial={{ opacity: 0, scale: 0.9 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.9 }}
-              layout
-              className="flex items-center gap-1.5 rounded-full bg-stone-100 px-3 py-1.5"
-            >
-              {item.emoji && (
-                <span className="text-sm" role="img" aria-hidden>
-                  {item.emoji}
+      <div className="flex items-center gap-6 overflow-x-auto">
+        <div className="flex shrink-0 items-center gap-2">
+          <Sparkles className="size-4 text-stone-400" />
+          <span className="font-mono text-xs font-bold uppercase tracking-wide text-stone-400">
+            Your Card Details
+          </span>
+        </div>
+
+        <div className="flex items-center gap-4">
+          <AnimatePresence mode="popLayout">
+            {items.map((item) => (
+              <motion.div
+                key={item.key}
+                initial={{ opacity: 0, x: -10 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: -10 }}
+                layout
+                className="flex shrink-0 items-center gap-1.5"
+              >
+                <span className="text-stone-400">{item.icon}</span>
+                <span className="font-mono text-xs uppercase tracking-wide text-stone-400">
+                  {item.label}:
                 </span>
-              )}
-              <span className="text-xs text-stone-500">{item.label}:</span>
-              <span className="text-xs font-medium text-stone-700">{item.value}</span>
-            </motion.div>
-          ))}
-        </AnimatePresence>
+                <span className="text-sm font-medium text-stone-700">
+                  {item.value}
+                </span>
+              </motion.div>
+            ))}
+          </AnimatePresence>
+        </div>
       </div>
     </motion.div>
   );

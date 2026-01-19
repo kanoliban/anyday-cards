@@ -1,10 +1,11 @@
-import type { Card, CardVariant } from '~/src/app/cards/models';
+import type { Card, CardVariant, WizardAnswers } from '~/src/app/cards/models';
 
 export type CardCustomization = {
   recipientName: string;
   relationship: string;
   occasion: string;
   message: string;
+  wizardAnswers?: WizardAnswers;
   generatedAt?: string;
 };
 
