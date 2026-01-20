@@ -175,15 +175,12 @@ export default function Description({ className }: { className?: string }) {
         className="flex flex-col gap-5 lg:gap-5"
       >
         <motion.p variants={slideInVariants} className="text-pretty">
-          Beautiful greeting cards for life&apos;s everyday moments. Whether you&apos;re celebrating
-          a birthday, saying thank you, or just thinking of someone — find the perfect card to
-          express what words alone can&apos;t.
+          Pick a card. Tell us about them. We&apos;ll write the message.
         </motion.p>
 
-        <motion.p variants={slideInVariants} className="text-prety">
-          Each design is crafted with care, blending thoughtful typography with warm illustrations.
-          From playful to elegant, minimal to festive — discover cards that feel as special as the
-          moments they <span className="italic">celebrate</span>.
+        <motion.p variants={slideInVariants} className="text-pretty">
+          No more staring at a blank card wondering what to say. Answer a few questions about who
+          it&apos;s for and how you feel — we&apos;ll help you find the right words.
         </motion.p>
 
         <motion.div

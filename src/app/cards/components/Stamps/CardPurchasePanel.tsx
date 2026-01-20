@@ -106,7 +106,7 @@ export function CardPurchasePanel({ card: cardProp, className }: CardPurchasePan
         )}
       >
         <Sparkles className="size-4" />
-        <span>Make My Card</span>
+        <span>Personalize with AI</span>
       </button>
     </motion.div>
   );

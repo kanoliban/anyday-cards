@@ -14,7 +14,7 @@ const links = {
   '/work': { label: 'Cards', width: 4.5 },
   '/': { label: 'Home', width: 4.55 },
   '/shop': { label: 'Shop', width: 4.125 },
-  '/contact': { label: 'Contact', width: 5.4 },
+  '/about': { label: 'About', width: 4.5 },
 };
 
 export default function Navabar() {

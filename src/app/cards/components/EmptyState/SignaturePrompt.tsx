@@ -63,7 +63,7 @@ export function SignaturePrompt({
       xmlns="http://www.w3.org/2000/svg"
       fill="none"
       viewBox="0 0 486 127"
-      aria-label="Select to see the details"
+      aria-label="Pick a card to start"
     >
       <motion.g
         stroke="currentColor"
@@ -230,7 +230,7 @@ export function SignaturePromptSmall({
       xmlns="http://www.w3.org/2000/svg"
       fill="none"
       viewBox="0 0 132 93"
-      aria-label="Select to see the details"
+      aria-label="Pick a card to start"
     >
       <motion.g
         stroke="currentColor"

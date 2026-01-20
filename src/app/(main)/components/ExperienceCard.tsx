@@ -11,23 +11,23 @@ type Step = {
 const steps: Step[] = [
   {
     number: '01',
-    title: 'Browse',
-    description: 'Explore cards by occasion',
+    title: 'Pick',
+    description: 'Choose a card design',
   },
   {
     number: '02',
-    title: 'Select',
-    description: 'Choose physical or digital',
+    title: 'Tell us',
+    description: 'A few quick questions about them',
   },
   {
     number: '03',
-    title: 'Personalize',
-    description: 'Add your message',
+    title: 'We write',
+    description: 'Words that sound like you',
   },
   {
     number: '04',
     title: 'Send',
-    description: 'We print & ship, or download instantly',
+    description: 'Print, ship, or download',
   },
 ];
 

@@ -164,9 +164,10 @@ export default function WizardShell({ className }: Props) {
           </button>
         </div>
         <div className="text-center">
-          <h2 className="text-2xl font-medium text-stone-800">Ready to generate!</h2>
+          <h2 className="text-2xl font-medium text-stone-800">Let&apos;s write your message</h2>
           <p className="mt-2 text-stone-600">
-            Review your answers and generate a personalized message.
+            Based on what you told us, we&apos;ll craft something that sounds like you. You can edit
+            it after.
           </p>
         </div>
       </div>
@@ -186,7 +187,7 @@ export default function WizardShell({ className }: Props) {
               <ArrowLeft className="size-5" />
             </button>
           )}
-          <span className="text-sm font-medium text-stone-600">{progress}% personalized</span>
+          <span className="text-sm font-medium text-stone-600">Almost there...</span>
         </div>
         <button
           onClick={handleClose}

@@ -111,7 +111,7 @@ export default async function Home() {
         <main className="pb-12">
           <Heading className="mb-8" />
           <div className="mb-20 flex flex-col items-start gap-3 text-text-primary xxs:flex-row xxs:items-center xxs:gap-4">
-            <p className="text-lg text-text-secondary">AI-generated designs, premium paper</p>
+            <p className="text-lg text-text-secondary">Cards that actually sound like you</p>
             <div className="flex gap-2">
               {ctaLinks.map(({ label, href }) => (
                 <Button size="sm" asChild key={label}>
