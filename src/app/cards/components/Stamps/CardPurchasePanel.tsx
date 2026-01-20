@@ -13,9 +13,10 @@ import { useCardStore } from '../../store';
 interface CardPurchasePanelProps {
   card?: Card;
   className?: string;
+  onPersonalize?: () => void;
 }
 
-export function CardPurchasePanel({ card: cardProp, className }: CardPurchasePanelProps) {
+export function CardPurchasePanel({ card: cardProp, className, onPersonalize }: CardPurchasePanelProps) {
   const [variant, setVariant] = useState<CardVariant>('digital');
   const startWizard = useCardStore((s) => s.startWizard);
   const selectedCardId = useCardStore((s) => s.selectedCardId);
@@ -96,7 +97,10 @@ export function CardPurchasePanel({ card: cardProp, className }: CardPurchasePan
 
       {/* Make My Card Button */}
       <button
-        onClick={startWizard}
+        onClick={() => {
+          startWizard();
+          onPersonalize?.();
+        }}
         className={cn(
           'flex w-full items-center justify-center gap-2 rounded-md px-4 py-3',
           'bg-stone-800 text-white',

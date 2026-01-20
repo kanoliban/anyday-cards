@@ -18,14 +18,13 @@ const social = [
 
 export default function BrandStoryCard() {
   return (
-    <Card className="flex flex-1 flex-col gap-4 bg-panel-background">
+    <Card className="flex flex-1 flex-col gap-2 bg-panel-background">
       <MiniCanvas />
 
-      <p className="panel text-sm leading-6 text-text-primary">
-        AnyDayCard started from a simple belief: the right card at the right moment matters. We
-        design greeting cards that feel personal, thoughtful, and worth keeping. Each card is
-        crafted with care—from the paper stock to the typography—because we believe tangible
-        expressions of connection never go out of style.
+      <p className="text-4xl italic leading-snug text-text-primary">
+        Writing the perfect card message is hard. That's where we come in. Tell us about
+        them—their humor, what makes them special—and we'll write something that sounds like you
+        wrote it, and ship it straight to them.
       </p>
       <div className="mt-4 flex flex-col items-start justify-between text-text-primary md:flex-row md:items-center">
         <div className="flex flex-wrap items-center gap-2">

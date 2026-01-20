@@ -1,7 +1,4 @@
-import Link from 'next/link';
-
 import MousePositionVarsSetter from '~/src/components/MousePositionVarsSetter';
-import Button from '~/src/components/ui/Button';
 import ViewCounter from '~/src/components/ViewCounter';
 
 import {
@@ -29,11 +26,6 @@ import { Metadata } from 'next';
 
 import SystemMetricsCollector from '~/src/lib/SystemMetricsCollector';
 import { withTimeout } from '~/src/util';
-
-const ctaLinks = [
-  { label: 'Browse Cards', href: '/work' },
-  { label: 'Shop Now', href: '/shop' },
-] as const;
 
 const getCards = ({ sketchbookCard }: { sketchbookCard: boolean }) => [
   { gridArea: '👋', Component: BioCard },
@@ -90,7 +82,7 @@ const fetchSystemMetrics = ({ timeout = 1000 }) => {
 };
 
 export const metadata: Metadata = {
-  title: 'anydaycard | Thoughtful cards, any occasion',
+  title: 'anydaycard | Cards that sound like you',
   description:
     'AI-generated greeting cards for every occasion. Premium paper, timeless designs, available as physical prints or digital downloads.',
 };
@@ -110,15 +102,9 @@ export default async function Home() {
       <div className="flex flex-col px-5 py-5 md:py-12">
         <main className="pb-12">
           <Heading className="mb-8" />
-          <div className="mb-20 flex flex-col items-start gap-3 text-text-primary xxs:flex-row xxs:items-center xxs:gap-4">
-            <p className="text-lg text-text-secondary">Cards that actually sound like you</p>
-            <div className="flex gap-2">
-              {ctaLinks.map(({ label, href }) => (
-                <Button size="sm" asChild key={label}>
-                  <Link href={href}>{label}</Link>
-                </Button>
-              ))}
-            </div>
+          <div className="mb-20">
+            <p className="text-lg text-text-secondary">Skip the blank card panic. Answer a few questions and we'll craft the perfect message, you take the credit.</p>
+            <p className="mt-2 text-lg font-medium text-text-primary">Real cards. Real paper. Hand Delivered.</p>
           </div>
           <div className="home-cards">
             {getCards({ sketchbookCard: true }).map(({ gridArea, Component }, i) => (
