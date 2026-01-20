@@ -10,17 +10,17 @@ import colors from 'tailwindcss/colors';
 import { clamp, randInt } from '~/src/math';
 import { cn } from '~/src/util';
 
-import { cards as allCards, CollectionType, collectionTypes } from '~/src/app/cards/constants';
-import type { Card } from '~/src/app/cards/models';
-import CanvasGrid from '~/src/app/cards/components/CanvasGrid';
-import CardPurchasePanel from '~/src/app/cards/components/Stamps/CardPurchasePanel';
-import { useCardStore } from '~/src/app/cards/store';
-import CollectionsList from '~/src/app/cards/components/CollectionsList';
-import { PunchPattern } from '~/src/app/cards/components/Stamps/PunchPattern';
-import { Footer } from '~/src/app/cards/components/Stamps/Footer';
-import { DrawnActionButton } from '~/src/app/cards/components/Stamps/ActionButton';
-import DrawnOrganize from '~/src/app/cards/components/Stamps/actions/organize.svg';
-import DrawnShuffle from '~/src/app/cards/components/Stamps/actions/shuffle.svg';
+import { cards as allCards, CollectionType, collectionTypes } from '~/src/app/create/constants';
+import type { Card } from '~/src/app/create/models';
+import CanvasGrid from '~/src/app/create/components/CanvasGrid';
+import CardPurchasePanel from '~/src/app/create/components/Stamps/CardPurchasePanel';
+import { useCardStore } from '~/src/app/create/store';
+import CollectionsList from '~/src/app/create/components/CollectionsList';
+import { PunchPattern } from '~/src/app/create/components/Stamps/PunchPattern';
+import { Footer } from '~/src/app/create/components/Stamps/Footer';
+import { DrawnActionButton } from '~/src/app/create/components/Stamps/ActionButton';
+import DrawnOrganize from '~/src/app/create/components/Stamps/actions/organize.svg';
+import DrawnShuffle from '~/src/app/create/components/Stamps/actions/shuffle.svg';
 
 // Sample 6 cards from different collections for variety
 const sampleCards = [
@@ -374,7 +374,7 @@ export default function MiniCanvas({ className }: { className?: string }) {
                 onPersonalize={() => {
                   setSelectedCardId(selectedCard.id);
                   setSelectedCard(null);
-                  router.push('/cards');
+                  router.push('/create');
                 }}
               />
             </motion.div>
@@ -390,7 +390,7 @@ export default function MiniCanvas({ className }: { className?: string }) {
 
       {/* Link to full experience */}
       <Link
-        href="/cards"
+        href="/create"
         className="mt-2 flex items-center justify-center gap-1 text-sm text-theme-1 transition-colors hover:text-theme-2"
       >
         <span>Click around</span>

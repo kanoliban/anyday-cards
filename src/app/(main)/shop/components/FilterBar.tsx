@@ -1,6 +1,6 @@
 'use client';
 
-import { CollectionType, collectionTypes } from '~/src/app/cards/constants';
+import { CollectionType, collectionTypes } from '~/src/app/create/constants';
 import { cn } from '~/src/util';
 
 type Props = {

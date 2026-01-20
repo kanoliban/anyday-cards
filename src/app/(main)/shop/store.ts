@@ -1,7 +1,7 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 
-import type { Card, CardVariant } from '~/src/app/cards/models';
+import type { Card, CardVariant } from '~/src/app/create/models';
 
 import { CardCustomization, CartItem, getCartItemKey, getItemPrice } from './models';
 

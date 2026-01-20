@@ -19,7 +19,7 @@ export default function ShopCTACard() {
           <div className="font-archivo text-3xl md:text-4xl">
             <Link
               className="group flex items-center gap-3 rounded-lg"
-              href="/cards"
+              href="/create"
             >
               Shop Now
               <ArrowRightIcon className="group-hover:bg-theme-3 size-8 rounded-full p-1 transition-all duration-150 md:size-12" />

@@ -207,7 +207,7 @@ export default function SkewedCardsCard() {
       <div className="flex flex-col gap-4">
         <CardTitle variant="mono">
           <Link
-            href="/cards"
+            href="/create"
             className="group flex w-full items-center justify-between gap-2 rounded-md"
           >
             <span>Card Collection</span>

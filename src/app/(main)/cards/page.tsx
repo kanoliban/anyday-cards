@@ -3,8 +3,8 @@ import { Metadata } from 'next';
 import ClientRendered from '~/src/components/ClientRendered';
 import ViewLogger from '~/src/components/ViewCounter';
 
-import CardsGrid from '~/src/app/cards/components/CardsGrid';
-import { cards, CollectionFilter } from '~/src/app/cards/constants';
+import CardsGrid from '~/src/app/create/components/CardsGrid';
+import { cards, CollectionFilter } from '~/src/app/create/constants';
 
 export const metadata: Metadata = {
   title: 'Cards | anydaycard',
@@ -24,7 +24,7 @@ export default async function Work({ searchParams }: { searchParams: Promise<{ f
 
   return (
     <div className="flex flex-1 flex-col">
-      <ViewLogger pathname="/work" />
+      <ViewLogger pathname="/cards" />
       <main className="flex-1">
         {/* todo: hotfix, remove client rendered */}
         <ClientRendered>

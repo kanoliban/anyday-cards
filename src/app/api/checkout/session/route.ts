@@ -1,8 +1,8 @@
 import { NextResponse } from 'next/server';
 import { z } from 'zod';
 
-import { cards } from '~/src/app/cards/constants';
-import type { CardVariant } from '~/src/app/cards/models';
+import { cards } from '~/src/app/create/constants';
+import type { CardVariant } from '~/src/app/create/models';
 import { getBaseUrl, getStripe } from '~/src/lib/stripe';
 
 const customizationSchema = z.object({

@@ -21,8 +21,8 @@ import useMatchMedia from '~/src/hooks/useMatchMedia';
 import { cn } from '~/src/util';
 
 import type { Card, CardVariant } from '../models';
-import Carousel from '../../(main)/work/components/Carousel';
-import WorkCard from '../../(main)/work/components/Card';
+import Carousel from '../../(main)/cards/components/Carousel';
+import WorkCard from '../../(main)/cards/components/Card';
 import CardPurchaseForm from './CardPurchaseForm';
 
 type Props = {

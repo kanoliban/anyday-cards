@@ -45,7 +45,7 @@ export default function BrandStoryCard() {
           </div>
         </div>
         <Button className="mt-10 md:mt-0" iconRight={<ArrowRightIcon />} asChild>
-          <Link href="/cards">Browse Cards</Link>
+          <Link href="/create">Browse Cards</Link>
         </Button>
       </div>
     </Card>

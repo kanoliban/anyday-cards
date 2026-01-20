@@ -6,7 +6,7 @@ import { useSearchParams } from 'next/navigation';
 import Button from '~/src/components/ui/Button';
 
 import MainHeader from '../../components/Header';
-import { collectionFilters, type CollectionFilter } from '~/src/app/cards/constants';
+import { collectionFilters, type CollectionFilter } from '~/src/app/create/constants';
 
 const filterLabels: Record<CollectionFilter, string> = {
   all: 'All',
@@ -30,7 +30,7 @@ export default function Header() {
             variant={f === filter || (f === 'all' && !filter) ? 'secondary' : 'primary'}
             className="shrink-0 text-xs md:text-sm"
           >
-            <Link href={f === 'all' ? `/work` : `/work?f=${f}`}>{filterLabels[f]}</Link>
+            <Link href={f === 'all' ? `/cards` : `/cards?f=${f}`}>{filterLabels[f]}</Link>
           </Button>
         ))}
       </div>
