@@ -1,4 +1,4 @@
-import Anthropic from '@anthropic-ai/sdk';
+import { GoogleGenerativeAI } from '@google/generative-ai';
 import { NextResponse } from 'next/server';
 import { z } from 'zod';
 
@@ -25,14 +25,15 @@ export async function POST(req: Request) {
 
     const { recipientName, relationship, occasion, cardTone, details } = parsed.data;
 
-    const apiKey = process.env.ANTHROPIC_API_KEY;
+    const apiKey = process.env.GOOGLE_GEMINI_API_KEY;
     if (!apiKey) {
       // Fallback to a template message if no API key
       const fallbackMessage = generateFallbackMessage(recipientName, relationship, occasion);
       return NextResponse.json({ message: fallbackMessage });
     }
 
-    const anthropic = new Anthropic({ apiKey });
+    const genAI = new GoogleGenerativeAI(apiKey);
+    const model = genAI.getGenerativeModel({ model: 'gemini-2.0-flash' });
 
     const toneGuide = cardTone
       ? `The tone should be ${cardTone} (e.g., warm and heartfelt, playful and fun, elegant and sincere).`
@@ -42,13 +43,7 @@ export async function POST(req: Request) {
       ? `\n\nPersonal context to incorporate: ${details}`
       : '';
 
-    const message = await anthropic.messages.create({
-      model: 'claude-3-haiku-20240307',
-      max_tokens: 200,
-      messages: [
-        {
-          role: 'user',
-          content: `Write a short, heartfelt card message for ${recipientName} (my ${relationship.toLowerCase()}) for a ${occasion} card. ${toneGuide}${detailsContext}
+    const prompt = `Write a short, heartfelt card message for ${recipientName} (my ${relationship.toLowerCase()}) for a ${occasion} card. ${toneGuide}${detailsContext}
 
 Requirements:
 - 2-4 sentences maximum
@@ -58,15 +53,17 @@ Requirements:
 - Focus on the sentiment, not generic phrases
 - If personal context is provided, weave it naturally into the message
 
-Write just the message, nothing else.`,
-        },
-      ],
-    });
+Write just the message, nothing else.`;
 
-    const generatedText =
-      message.content[0].type === 'text'
-        ? message.content[0].text.trim()
-        : generateFallbackMessage(recipientName, relationship, occasion);
+    const result = await model.generateContent(prompt);
+    const response = result.response;
+    const generatedText = response.text().trim();
+
+    if (!generatedText) {
+      return NextResponse.json({
+        message: generateFallbackMessage(recipientName, relationship, occasion),
+      });
+    }
 
     return NextResponse.json({ message: generatedText });
   } catch (error) {
