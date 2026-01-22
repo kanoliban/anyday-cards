@@ -194,12 +194,23 @@ button {
   z-index: 1;
 }
 
-/* Premium paper - smooth clean white with paper-like light */
+/* Premium paper - smooth white with vignette (sheet on desk) */
 .texture-paper {
   position: relative;
-  background:
-    radial-gradient(ellipse 120% 80% at 50% 0%, oklch(1 0 0) 0%, oklch(0.985 0 0) 100%),
-    oklch(0.99 0 0);
+  background: oklch(0.995 0 0);
+}
+
+.texture-paper::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(
+    ellipse 70% 60% at 50% 45%,
+    transparent 0%,
+    oklch(0 0 0 / 0.03) 100%
+  );
+  pointer-events: none;
+  z-index: 0;
 }
 
 /* Machined edge inset highlight */
