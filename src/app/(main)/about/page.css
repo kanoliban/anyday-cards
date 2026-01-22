@@ -2,7 +2,7 @@
   display: grid;
   grid-gap: 20px;
   grid-template-columns: 300px minmax(auto, 480px) auto;
-  grid-template-rows: auto 1fr auto auto auto auto auto auto auto;
+  grid-template-rows: repeat(9, auto);
   grid-template-areas:
     '👋 👋 👔'
     '👋 👋 📌'
@@ -40,7 +40,7 @@
 @media (max-width: 768px) {
   .home-cards {
     grid-template-columns: 100%;
-    grid-template-rows: auto 1fr auto auto auto auto auto auto auto;
+    grid-template-rows: repeat(13, auto);
     grid-template-areas:
       '👋'
       '👔'
