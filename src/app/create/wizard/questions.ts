@@ -27,8 +27,18 @@ export interface QuestionConfig {
   required: boolean;
   maxSelect?: number;
   options?: QuestionOption[];
+  getOptions?: (answers: Record<string, unknown>) => QuestionOption[];
   showIf?: (answers: Record<string, unknown>) => boolean;
 }
+
+// Relationship categories for filtering
+export const ROMANTIC_RELATIONSHIPS: RelationshipType[] = ['partner', 'dating'];
+
+// Occasions only valid for romantic relationships
+export const ROMANTIC_ONLY_OCCASIONS: OccasionType[] = ['anniversary'];
+
+// Vibes only valid for romantic relationships
+export const ROMANTIC_ONLY_VIBES: VibeType[] = ['spicy'];
 
 // Relationship options with emojis
 export const relationshipOptions: QuestionOption<RelationshipType>[] = [
@@ -112,6 +122,36 @@ export const quickTraitOptions: QuestionOption<QuickTrait>[] = [
   { value: 'lifeOfTheParty', label: 'Life of the party', emoji: '🎉' },
 ];
 
+// Filter occasions based on relationship
+export function getFilteredOccasions(
+  relationshipType: RelationshipType | undefined
+): QuestionOption<OccasionType>[] {
+  if (!relationshipType) return occasionOptions;
+
+  const isRomantic = ROMANTIC_RELATIONSHIPS.includes(relationshipType);
+
+  if (isRomantic) return occasionOptions;
+
+  return occasionOptions.filter(
+    (option) => !ROMANTIC_ONLY_OCCASIONS.includes(option.value)
+  );
+}
+
+// Filter vibes based on relationship
+export function getFilteredVibes(
+  relationshipType: RelationshipType | undefined
+): QuestionOption<VibeType>[] {
+  if (!relationshipType) return vibeOptions;
+
+  const isRomantic = ROMANTIC_RELATIONSHIPS.includes(relationshipType);
+
+  if (isRomantic) return vibeOptions;
+
+  return vibeOptions.filter(
+    (option) => !ROMANTIC_ONLY_VIBES.includes(option.value)
+  );
+}
+
 // Question configurations
 export const questions: QuestionConfig[] = [
   {
@@ -139,7 +179,8 @@ export const questions: QuestionConfig[] = [
     title: "What's the occasion?",
     subtitle: "We'll tailor the message to the moment",
     required: true,
-    options: occasionOptions,
+    getOptions: (answers) =>
+      getFilteredOccasions(answers.relationshipType as RelationshipType | undefined),
   },
   {
     id: 'vibes',
@@ -149,7 +190,8 @@ export const questions: QuestionConfig[] = [
     subtitle: 'This shapes the whole message — pick up to 2',
     required: true,
     maxSelect: 2,
-    options: vibeOptions,
+    getOptions: (answers) =>
+      getFilteredVibes(answers.relationshipType as RelationshipType | undefined),
   },
   {
     id: 'humorType',

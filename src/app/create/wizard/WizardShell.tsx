@@ -34,6 +34,10 @@ export default function WizardShell({ className, onComplete }: Props) {
     [wizardStep]
   );
 
+  const resolvedOptions = currentQuestion?.getOptions
+    ? currentQuestion.getOptions(wizardAnswers)
+    : currentQuestion?.options;
+
   const progress = useMemo(
     () => calculateProgress(wizardStep, wizardAnswers),
     [wizardStep, wizardAnswers]
@@ -115,19 +119,19 @@ export default function WizardShell({ className, onComplete }: Props) {
       case 'grid':
         return (
           <GridSelect
-            options={currentQuestion.options as QuestionOption<string>[]}
+            options={(resolvedOptions ?? []) as QuestionOption<string>[]}
             value={(answer as string) ?? null}
             onChange={(value) =>
               setWizardAnswer(currentQuestion.id as keyof WizardAnswers, value)
             }
-            columns={currentQuestion.options && currentQuestion.options.length > 6 ? 3 : 2}
+            columns={resolvedOptions && resolvedOptions.length > 6 ? 3 : 2}
           />
         );
 
       case 'multiSelect':
         return (
           <MultiSelect
-            options={currentQuestion.options as QuestionOption<string>[]}
+            options={(resolvedOptions ?? []) as QuestionOption<string>[]}
             value={(answer as string[]) ?? []}
             onChange={(value) =>
               setWizardAnswer(currentQuestion.id as keyof WizardAnswers, value)
@@ -139,7 +143,7 @@ export default function WizardShell({ className, onComplete }: Props) {
       case 'list':
         return (
           <ListSelect
-            options={currentQuestion.options as QuestionOption<string>[]}
+            options={(resolvedOptions ?? []) as QuestionOption<string>[]}
             value={(answer as string) ?? null}
             onChange={(value) =>
               setWizardAnswer(currentQuestion.id as keyof WizardAnswers, value)
@@ -150,7 +154,7 @@ export default function WizardShell({ className, onComplete }: Props) {
       case 'chips':
         return (
           <ChipSelect
-            options={currentQuestion.options as QuestionOption<string>[]}
+            options={(resolvedOptions ?? []) as QuestionOption<string>[]}
             value={(answer as string[]) ?? []}
             onChange={(value) =>
               setWizardAnswer(currentQuestion.id as keyof WizardAnswers, value)
@@ -161,7 +165,7 @@ export default function WizardShell({ className, onComplete }: Props) {
       default:
         return null;
     }
-  }, [currentQuestion, wizardAnswers, setWizardAnswer]);
+  }, [currentQuestion, wizardAnswers, setWizardAnswer, resolvedOptions]);
 
   // Preview step
   if (wizardStep === 'preview') {

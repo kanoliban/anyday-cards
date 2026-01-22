@@ -43,6 +43,11 @@ function WizardContent() {
     [wizardStep]
   );
 
+  // Resolve options dynamically (filters based on previous answers)
+  const resolvedOptions = currentQuestion?.getOptions
+    ? currentQuestion.getOptions(wizardAnswers)
+    : currentQuestion?.options;
+
   const progress = useMemo(
     () => calculateProgress(wizardStep, wizardAnswers),
     [wizardStep, wizardAnswers]
@@ -261,7 +266,7 @@ function WizardContent() {
                     }}
                     className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4"
                   >
-                    {(currentQuestion.options as QuestionOption<string>[])?.map((option) => {
+                    {(resolvedOptions as QuestionOption<string>[])?.map((option) => {
                       const isSelected =
                         wizardAnswers[currentQuestion.id as keyof WizardAnswers] === option.value;
                       return (
@@ -306,7 +311,7 @@ function WizardContent() {
                       }}
                       className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4"
                     >
-                      {(currentQuestion.options as QuestionOption<string>[])?.map((option) => {
+                      {(resolvedOptions as QuestionOption<string>[])?.map((option) => {
                         const selected =
                           (wizardAnswers[currentQuestion.id as keyof WizardAnswers] as string[]) ?? [];
                         const isSelected = selected.includes(option.value);
@@ -364,7 +369,7 @@ function WizardContent() {
                     }}
                     className="mx-auto flex max-w-lg flex-col gap-3"
                   >
-                    {(currentQuestion.options as QuestionOption<string>[])?.map((option) => {
+                    {(resolvedOptions as QuestionOption<string>[])?.map((option) => {
                       const isSelected =
                         wizardAnswers[currentQuestion.id as keyof WizardAnswers] === option.value;
                       return (
@@ -402,7 +407,7 @@ function WizardContent() {
                       }}
                       className="flex flex-wrap justify-center gap-2"
                     >
-                      {(currentQuestion.options as QuestionOption<string>[])?.map((option) => {
+                      {(resolvedOptions as QuestionOption<string>[])?.map((option) => {
                         const selected =
                           (wizardAnswers[currentQuestion.id as keyof WizardAnswers] as string[]) ?? [];
                         const isSelected = selected.includes(option.value);
