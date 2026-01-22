@@ -2,8 +2,9 @@ import { headers } from 'next/headers';
 import { NextResponse } from 'next/server';
 import Stripe from 'stripe';
 
+import { sendDigitalCardEmail } from '~/src/lib/email';
 import { getStripe } from '~/src/lib/stripe';
-import { createClient } from '~/src/supabase/server';
+import { createServiceClient } from '~/src/supabase/server';
 
 const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET;
 
@@ -57,28 +58,49 @@ export async function POST(req: Request) {
 }
 
 async function handleCheckoutComplete(session: Stripe.Checkout.Session) {
-  const supabase = await createClient();
+  const supabase = createServiceClient();
 
   // Parse items from session metadata
   const itemsJson = session.metadata?.items;
   const items = itemsJson ? JSON.parse(itemsJson) : [];
 
-  const { error } = await supabase.from('orders').insert({
-    stripe_session_id: session.id,
-    stripe_payment_intent:
-      typeof session.payment_intent === 'string'
-        ? session.payment_intent
-        : session.payment_intent?.id ?? null,
-    customer_email: session.customer_details?.email ?? null,
-    items,
-    subtotal: session.amount_total ?? 0,
-    status: 'completed',
-  });
+  // Insert order and get ID
+  const { data: order, error } = await supabase
+    .from('orders')
+    .insert({
+      stripe_session_id: session.id,
+      stripe_payment_intent:
+        typeof session.payment_intent === 'string'
+          ? session.payment_intent
+          : session.payment_intent?.id ?? null,
+      customer_email: session.customer_details?.email ?? null,
+      items,
+      subtotal: session.amount_total ?? 0,
+      status: 'completed',
+    })
+    .select('id')
+    .single();
 
   if (error) {
     console.error('Failed to insert order:', error);
     throw error;
   }
 
-  console.log(`Order created for session: ${session.id}`);
+  console.log(`Order created: ${order.id}`);
+
+  // Send email for digital items
+  if (session.customer_details?.email) {
+    const emailSent = await sendDigitalCardEmail({
+      customerEmail: session.customer_details.email,
+      items,
+    });
+
+    if (emailSent) {
+      await supabase
+        .from('orders')
+        .update({ email_sent_at: new Date().toISOString() })
+        .eq('id', order.id);
+      console.log(`Email sent for order: ${order.id}`);
+    }
+  }
 }
