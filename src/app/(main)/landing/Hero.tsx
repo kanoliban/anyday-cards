@@ -55,7 +55,7 @@ export function Hero() {
               variant="secondary"
               iconRight={<ArrowRight size={20} weight="bold" />}
             >
-              <Link href="/card">Quick Create</Link>
+              <Link href="/create/wizard">Quick Create</Link>
             </Button>
             <Button asChild variant="primary">
               <Link href="/about">Learn more</Link>
@@ -81,15 +81,10 @@ export function Hero() {
           transition={{ duration: 0.8, delay: 0.3 }}
         >
           {/* Card - premium with character */}
-          <motion.div
-            className="texture-grain edge-highlight relative overflow-hidden rounded-2xl border border-black/10 bg-panel-background p-6 shadow-premium"
-            whileHover={{ rotate: 0 }}
-            initial={{ rotate: 2 }}
-            transition={{ duration: 0.5 }}
-          >
+          <div className="texture-grain edge-highlight relative overflow-hidden rounded-2xl border border-black/10 bg-panel-background p-6 shadow-premium">
             <div className="relative aspect-[4/5] overflow-hidden rounded-lg bg-theme-3">
               <img
-                src="https://images.unsplash.com/photo-1490810277975-e643497aa9d1?q=80&w=1000&auto=format&fit=crop"
+                src="https://images.unsplash.com/photo-1513151233558-d860c5398176?q=80&w=1000&auto=format&fit=crop"
                 alt="Greeting Card Example"
                 className="size-full object-cover"
               />
@@ -110,7 +105,7 @@ export function Hero() {
                 ))}
               </div>
             </div>
-          </motion.div>
+          </div>
         </motion.div>
       </div>
     </section>

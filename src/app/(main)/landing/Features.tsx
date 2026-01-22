@@ -8,7 +8,7 @@ export function Features() {
   return (
     <section
       id="features"
-      className="overflow-hidden bg-theme-4 py-24 text-text-contrast"
+      className="relative z-10 overflow-hidden bg-theme-4 py-24 text-text-contrast"
     >
       <div className="mx-auto flex max-w-7xl flex-col items-center gap-16 px-6 lg:flex-row">
         {/* Left content */}
@@ -51,33 +51,47 @@ export function Features() {
           </div>
         </div>
 
-        {/* Right content - Abstract cards */}
+        {/* Right content - Card previews */}
         <motion.div
           className="relative lg:w-1/2"
           initial={{ opacity: 0 }}
           whileInView={{ opacity: 1 }}
           viewport={{ once: true }}
         >
-          {/* Abstract card mockups - sharp definition */}
           <div className="relative grid grid-cols-2 gap-4">
+            {/* Card 1 - Birthday theme */}
             <motion.div
               initial={{ y: 20 }}
               whileInView={{ y: 32 }}
               viewport={{ once: true }}
-              className="translate-y-8 rounded-xl border border-white/20 bg-white/5 p-4 shadow-lg"
+              className="translate-y-8 overflow-hidden rounded-xl border border-white/20 bg-white/5 shadow-lg"
             >
-              <div className="mb-4 h-4 w-20 rounded bg-white/25" />
-              <div className="mb-2 h-3 w-full rounded bg-white/15" />
-              <div className="mb-2 h-3 w-3/4 rounded bg-white/15" />
-              <div className="mb-2 h-3 w-full rounded bg-white/15" />
-              <div className="mt-4 aspect-square rounded-lg border border-white/10 bg-white/5" />
+              <div className="aspect-[4/5] overflow-hidden">
+                <img
+                  src="https://images.unsplash.com/photo-1558636508-e0db3814bd1d?q=80&w=600&auto=format&fit=crop"
+                  alt="Birthday celebration card"
+                  className="size-full object-cover"
+                />
+              </div>
+              <div className="p-4">
+                <p className="text-sm font-medium text-white/90">Birthday Wishes</p>
+                <p className="mt-1 text-xs text-white/50">AI-personalized message</p>
+              </div>
             </motion.div>
 
-            <div className="rounded-xl border border-white/20 bg-white/5 p-4 shadow-lg">
-              <div className="mb-4 aspect-square rounded-lg border border-white/10 bg-white/5" />
-              <div className="mb-4 h-4 w-20 rounded bg-white/25" />
-              <div className="mb-2 h-3 w-full rounded bg-white/15" />
-              <div className="mb-2 h-3 w-1/2 rounded bg-white/15" />
+            {/* Card 2 - Thank you theme */}
+            <div className="overflow-hidden rounded-xl border border-white/20 bg-white/5 shadow-lg">
+              <div className="aspect-[4/5] overflow-hidden">
+                <img
+                  src="https://images.unsplash.com/photo-1518199266791-5375a83190b7?q=80&w=600&auto=format&fit=crop"
+                  alt="Thank you card with flowers"
+                  className="size-full object-cover"
+                />
+              </div>
+              <div className="p-4">
+                <p className="text-sm font-medium text-white/90">Thank You</p>
+                <p className="mt-1 text-xs text-white/50">Heartfelt gratitude</p>
+              </div>
             </div>
           </div>
         </motion.div>

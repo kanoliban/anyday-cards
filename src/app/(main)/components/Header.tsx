@@ -7,7 +7,6 @@ import { LogoIcon } from '~/src/components/icons';
 import useScroll from '~/src/hooks/useScroll';
 import { cn } from '~/src/util';
 
-import ThemeSwitcher from './ThemeSwitcher';
 
 const headerTriggerY = 50;
 
@@ -39,7 +38,6 @@ export default function Header({ children }: { children?: ReactNode }) {
       {children && (
         <div className="order-3 mt-4 w-full lg:order-0 lg:mt-0 lg:w-auto">{children}</div>
       )}
-      <ThemeSwitcher />
     </header>
   );
 }

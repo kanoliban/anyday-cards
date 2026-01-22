@@ -8,7 +8,6 @@ import Button from '~/src/components/ui/Button';
 import useScroll from '~/src/hooks/useScroll';
 import { cn } from '~/src/util';
 
-import ThemeSwitcher from '../components/ThemeSwitcher';
 
 const NAV_LINKS = [
   { label: 'How it works', href: '#how-it-works' },
@@ -59,16 +58,13 @@ export function LandingNav() {
               {link.label}
             </button>
           ))}
-          <div className="h-6 w-px bg-panel-border" />
-          <ThemeSwitcher />
           <Button asChild variant="secondary" size="sm">
-            <Link href="/create">Get Started</Link>
+            <Link href="/create/wizard">Create Card</Link>
           </Button>
         </div>
 
         {/* Mobile Menu Toggle */}
         <div className="flex items-center gap-2 md:hidden">
-          <ThemeSwitcher />
           <button
             className="p-2 text-text-secondary"
             onClick={() => setIsMenuOpen(!isMenuOpen)}
@@ -94,7 +90,7 @@ export function LandingNav() {
             ))}
             <hr className="border-panel-border" />
             <Button asChild variant="secondary" className="w-full justify-center">
-              <Link href="/create">Get Started</Link>
+              <Link href="/create/wizard">Create Card</Link>
             </Button>
           </div>
         </div>
