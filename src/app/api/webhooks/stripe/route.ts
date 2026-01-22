@@ -3,8 +3,10 @@ import { NextResponse } from 'next/server';
 import Stripe from 'stripe';
 
 import { sendDigitalCardEmail } from '~/src/lib/email';
+import { fulfillPhysicalCards } from '~/src/lib/lob';
 import { getStripe } from '~/src/lib/stripe';
 import { createServiceClient } from '~/src/supabase/server';
+import type { PhysicalCardItem, ShippingAddress } from '~/src/types/fulfillment';
 
 const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET;
 
@@ -64,6 +66,34 @@ async function handleCheckoutComplete(session: Stripe.Checkout.Session) {
   const itemsJson = session.metadata?.items;
   const items = itemsJson ? JSON.parse(itemsJson) : [];
 
+  // Extract shipping address if present (type assertion needed for checkout session)
+  const shippingDetails = (
+    session as Stripe.Checkout.Session & {
+      shipping_details?: {
+        name?: string | null;
+        address?: {
+          line1?: string | null;
+          line2?: string | null;
+          city?: string | null;
+          state?: string | null;
+          postal_code?: string | null;
+          country?: string | null;
+        } | null;
+      } | null;
+    }
+  ).shipping_details;
+  const shippingAddress: ShippingAddress | null = shippingDetails?.address
+    ? {
+        name: shippingDetails.name ?? '',
+        line1: shippingDetails.address.line1 ?? '',
+        line2: shippingDetails.address.line2 ?? null,
+        city: shippingDetails.address.city ?? '',
+        state: shippingDetails.address.state ?? '',
+        postalCode: shippingDetails.address.postal_code ?? '',
+        country: shippingDetails.address.country ?? 'US',
+      }
+    : null;
+
   // Insert order and get ID
   const { data: order, error } = await supabase
     .from('orders')
@@ -77,6 +107,8 @@ async function handleCheckoutComplete(session: Stripe.Checkout.Session) {
       items,
       subtotal: session.amount_total ?? 0,
       status: 'completed',
+      shipping_address: shippingAddress,
+      fulfillment_status: 'pending',
     })
     .select('id')
     .single();
@@ -89,10 +121,13 @@ async function handleCheckoutComplete(session: Stripe.Checkout.Session) {
   console.log(`Order created: ${order.id}`);
 
   // Send email for digital items
-  if (session.customer_details?.email) {
+  const digitalItems = items.filter(
+    (item: { variant: string }) => item.variant === 'digital'
+  );
+  if (session.customer_details?.email && digitalItems.length > 0) {
     const emailSent = await sendDigitalCardEmail({
       customerEmail: session.customer_details.email,
-      items,
+      items: digitalItems,
     });
 
     if (emailSent) {
@@ -101,6 +136,78 @@ async function handleCheckoutComplete(session: Stripe.Checkout.Session) {
         .update({ email_sent_at: new Date().toISOString() })
         .eq('id', order.id);
       console.log(`Email sent for order: ${order.id}`);
+    }
+  }
+
+  // Fulfill physical cards via Lob
+  const physicalItems: PhysicalCardItem[] = items
+    .filter((item: { variant: string }) => item.variant === 'physical')
+    .map(
+      (item: {
+        cardId: string;
+        quantity: number;
+        customization?: {
+          recipientName: string;
+          relationship: string;
+          occasion: string;
+          message: string;
+        };
+      }) => ({
+        cardId: item.cardId,
+        quantity: item.quantity,
+        customization: item.customization,
+      })
+    );
+
+  if (physicalItems.length > 0 && shippingAddress) {
+    try {
+      const fulfillmentResults = await fulfillPhysicalCards({
+        orderId: order.id,
+        items: physicalItems,
+        shippingAddress,
+      });
+
+      const allSubmitted = fulfillmentResults.every(
+        (r) => r.status === 'submitted'
+      );
+      const anyFailed = fulfillmentResults.some((r) => r.status === 'failed');
+
+      await supabase
+        .from('orders')
+        .update({
+          fulfillment_status: anyFailed
+            ? 'partially_fulfilled'
+            : allSubmitted
+              ? 'processing'
+              : 'pending',
+          fulfillment_results: fulfillmentResults,
+          fulfillment_submitted_at: new Date().toISOString(),
+        })
+        .eq('id', order.id);
+
+      console.log(
+        `Physical fulfillment submitted for order: ${order.id}`,
+        fulfillmentResults
+      );
+    } catch (fulfillmentError) {
+      console.error(
+        `Failed to fulfill physical cards for order ${order.id}:`,
+        fulfillmentError
+      );
+      await supabase
+        .from('orders')
+        .update({
+          fulfillment_status: 'failed',
+          fulfillment_results: [
+            {
+              error:
+                fulfillmentError instanceof Error
+                  ? fulfillmentError.message
+                  : 'Unknown error',
+            },
+          ],
+        })
+        .eq('id', order.id);
     }
   }
 }

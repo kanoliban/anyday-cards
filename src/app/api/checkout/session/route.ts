@@ -96,6 +96,9 @@ export async function POST(req: Request) {
       }),
     }));
 
+    // Check if any items require shipping
+    const hasPhysicalItems = items.some((item) => item.variant === 'physical');
+
     const session = await getStripe().checkout.sessions.create({
       mode: 'payment',
       line_items: lineItems,
@@ -104,6 +107,12 @@ export async function POST(req: Request) {
       metadata: {
         items: JSON.stringify(itemsForMetadata),
       },
+      // Collect shipping address for physical items
+      ...(hasPhysicalItems && {
+        shipping_address_collection: {
+          allowed_countries: ['US', 'CA'],
+        },
+      }),
     });
 
     return NextResponse.json({ url: session.url });
