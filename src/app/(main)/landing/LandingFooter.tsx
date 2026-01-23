@@ -17,7 +17,9 @@ export function LandingFooter() {
             AnyDayCard
           </Link>
           <p className="text-sm text-text-muted">
-            Making the world a little more thoughtful, one card at a time.
+            Cards that sound like you.
+            <br />
+            Made with a little help.
           </p>
         </div>
 

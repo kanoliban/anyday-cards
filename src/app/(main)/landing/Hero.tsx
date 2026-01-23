@@ -29,9 +29,9 @@ export function Hero() {
             transition={{ duration: 0.6, delay: 0.1 }}
             className="font-archivo text-5xl font-bold leading-[1.1] tracking-tight text-text-primary lg:text-7xl"
           >
-            Thoughtful cards,{' '}
-            <span className="italic text-theme-1">written by AI,</span> sent by
-            you.
+            Send Cards That{' '}
+            <span className="italic text-theme-1">Sound Like You,</span> Made in
+            Minutes
           </motion.h1>
 
           <motion.p
