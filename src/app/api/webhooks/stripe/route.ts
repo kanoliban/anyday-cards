@@ -152,9 +152,12 @@ async function handleCheckoutComplete(session: Stripe.Checkout.Session) {
   console.log(`Order created: ${order.id}`);
 
   // Send email for digital items
-  const digitalItems = items.filter(
-    (item: { variant: string }) => item.variant === 'digital'
-  );
+  const digitalItems = items
+    .filter((item: { variant: string }) => item.variant === 'digital')
+    .map((item) => ({
+      ...item,
+      variant: 'digital' as const,
+    }));
   if (session.customer_details?.email && digitalItems.length > 0) {
     const emailSent = await sendDigitalCardEmail({
       customerEmail: session.customer_details.email,

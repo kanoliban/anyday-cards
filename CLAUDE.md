@@ -11,6 +11,54 @@ npm run build      # Production build
 npm run lint       # ESLint
 ```
 
+---
+
+## ⚠️ CORE PRODUCT ARCHITECTURE (READ THIS FIRST)
+
+**AnydayCard = Pre-designed templates + AI-generated text. NOT AI-generated artwork.**
+
+```
+┌─────────────────────────────────────────────────────────────────┐
+│  PRE-DESIGNED CARD TEMPLATES (static artwork)                   │
+│  - Professional designs created by humans                       │
+│  - Defined in src/app/create/constants.ts                       │
+│  - This is our design differentiation / brand identity          │
+└─────────────────────────────────────────────────────────────────┘
+                              +
+┌─────────────────────────────────────────────────────────────────┐
+│  AI-GENERATED TEXT MESSAGE (personalized via ADC)               │
+│  - Wizard collects: name, relationship, occasion, vibe, traits  │
+│  - ADC Foundation Model composes the prompt                     │
+│  - Gemini generates the message                                 │
+│  - This is our personalization moat                             │
+└─────────────────────────────────────────────────────────────────┘
+                              =
+┌─────────────────────────────────────────────────────────────────┐
+│  FINAL CARD (template + message)                                │
+│  - Digital: delivered via email                                 │
+│  - Physical: printed and shipped via Lob                        │
+└─────────────────────────────────────────────────────────────────┘
+```
+
+**Why this architecture:**
+- **Consistent quality:** Pre-designed templates guarantee print-ready, brand-aligned output
+- **AI where it matters:** Text personalization is where AI adds real value
+- **Design differentiation:** Our templates are our brand; AI-generated art would commoditize this
+- **Reliable fulfillment:** Static templates work predictably with Lob print API
+
+**DO NOT:**
+- Build AI image generation features
+- Generate card artwork dynamically
+- Replace templates with AI-generated designs
+
+**DO:**
+- Improve the ADC Foundation Model for better text generation
+- A/B test prompt strategies (v1 vs v2)
+- Add more pre-designed card templates
+- Enhance the wizard to collect better personalization data
+
+---
+
 ## Product Overview
 
 **Core flow:** Occasion → Recipient → Questions → Template → AI Message → Preview → Checkout
@@ -54,7 +102,9 @@ src/app/
 │   ├── shop/               # Cart, checkout, success
 │   └── components/         # Shared UI (ThemeSwitcher, etc.)
 ├── api/                     # API routes
-│   ├── generate/           # AI message generation (Gemini)
+│   ├── generate/           # AI message generation v1 (Gemini)
+│   ├── generate-v2/        # AI message generation v2 (A/B testing)
+│   ├── analytics/events/   # A/B testing event logging
 │   ├── checkout/session/   # Stripe checkout session creation
 │   ├── webhooks/stripe/    # Stripe webhook handler
 │   ├── feedback/
@@ -69,10 +119,14 @@ src/app/
 | Purpose | Location |
 |---------|----------|
 | Wizard questions & step logic | `src/app/create/wizard/questions.ts` |
-| Wizard shell | `src/app/create/wizard/WizardShell.tsx` |
+| Card wizard component | `src/app/create/components/CardWizard.tsx` |
 | Type definitions | `src/app/create/models.ts` |
-| Card definitions | `src/app/create/constants.ts` |
-| AI message generation | `src/app/api/generate/route.ts` |
+| Card template definitions | `src/app/create/constants.ts` |
+| AI message generation v1 | `src/app/api/generate/route.ts` |
+| AI message generation v2 | `src/app/api/generate-v2/route.ts` |
+| ADC v2 system prompt | `src/lib/adc/v2/prompts/text.ts` |
+| A/B testing (cohort assignment) | `src/lib/ab-testing.ts` |
+| Analytics (event tracking) | `src/lib/analytics.ts` |
 | Stripe checkout | `src/app/api/checkout/session/route.ts` |
 | Stripe webhooks | `src/app/api/webhooks/stripe/route.ts` |
 | Stripe client | `src/lib/stripe.ts` |
@@ -103,17 +157,78 @@ Steps defined in `questions.ts`:
 
 Conditional logic via `showIf` functions. Navigation via `getNextStep`/`getPrevStep`.
 
+## ADC Foundation Model (Text Generation)
+
+The **ADC (AnydayCard) Foundation Model** is our versioned prompt composition system. It's where the craft lives.
+
+```
+src/lib/adc/
+├── index.ts              # Exports current version + v1/v2 namespaces
+├── types.ts              # GenerationInput, Vibe, HumorType, etc.
+├── v1/                   # Version 1: Concatenation approach
+│   ├── compose.ts        # Composition engine
+│   ├── components/       # tones, traits, occasions
+│   └── prompts/text.ts   # Prompt builder
+└── v2/                   # Version 2: Composition-aware system prompt
+    └── prompts/text.ts   # System prompt + user message builder
+```
+
+**v1 vs v2 Architecture:**
+
+| Aspect | v1 (Concatenation) | v2 (Composition-Aware) |
+|--------|-------------------|------------------------|
+| Approach | Hand-coded rules concatenated into prompt | System prompt teaches Gemini composition rules |
+| Prompt structure | Single user message | `systemInstruction` + user message |
+| Tone blending | Explicit conditionals | Gemini reasons about how tones interact |
+| Endpoint | `/api/generate` | `/api/generate-v2` |
+| Version | `1.0.x` | `2.0.x` |
+
+## A/B Testing Infrastructure
+
+Users are randomly assigned to cohorts for comparing v1 vs v2 text generation.
+
+**How it works:**
+1. First visit → 50/50 random assignment to `v1` or `v2` (stored in localStorage)
+2. Message generation → routes to appropriate endpoint based on cohort
+3. All events tagged with `cohort` + `version` for analysis
+
+**Key files:**
+- `src/lib/ab-testing.ts` — Cohort assignment, endpoint selection
+- `src/lib/analytics.ts` — Event tracking with cohort tags
+- `src/app/api/analytics/events/route.ts` — Server-side event logging
+
+**Events tracked:**
+- `adc_message_generated` — First generation
+- `adc_message_regenerated` — User clicked regenerate (with count)
+- `adc_checkout_started` — Began checkout
+- `adc_purchase_completed` — Successful purchase
+
+**Testing locally:**
+```javascript
+// Force cohort (browser console)
+localStorage.setItem('adc_cohort', 'v2')  // or 'v1'
+localStorage.getItem('adc_cohort')         // check current
+
+// Disable A/B testing (use v2 for everyone)
+// Set NEXT_PUBLIC_AB_TESTING_ENABLED=false in .env.local
+```
+
+**Success metrics:**
+- Regeneration rate ↓ (v2 should be lower = users happier with first result)
+- Conversion rate ↑ (or at least no regression)
+- Time-to-checkout ↓ (no added friction)
+
 ## External Integrations
 
 **Active:**
-- **AI:** Google Gemini (message generation)
+- **AI:** Google Gemini (`gemini-2.0-flash` for text generation)
 - **Payments:** Stripe (checkout + webhooks configured)
 - **Database:** Supabase (orders table)
+- **Analytics:** Umami (with A/B cohort tagging)
 
 **Planned:**
 - **Print Fulfillment:** Lob API (keys in `.env.local`)
 - **Email:** SendGrid (for digital card delivery)
-- **Analytics:** PostHog, Umami
 
 ## PRD Reference
 
@@ -154,43 +269,32 @@ Claude automatically reads this file — no need for `git status` to "sync" cont
 
 ## Current Status
 
-**Last updated:** 2026-01-22
+**Last updated:** 2026-01-23
 
 **Recent changes:**
-- **ADC Foundation Model v1.0 implemented** — versioned prompt composition system
-  - Created `src/lib/adc/` with modular component architecture
-  - Composition engine combines tones, traits, styles, occasions
-  - Refactored `/api/generate` to use ADC library
-  - Added `/api/generate-image` endpoint for image prompt composition
-  - Version tracking (`ADC_VERSION = '1.0.0'`) in all API responses
-  - Structured logging with `[ADC]` prefix for analytics
+- **ADC Foundation Model v2.0 implemented** — composition-aware system prompt
+  - v2 uses `systemInstruction` parameter to teach Gemini tone blending, trait integration, relationship awareness
+  - Current version: `2.0.6` with extensive composition rules
+- **A/B Testing Infrastructure complete**
+  - 50/50 cohort split between v1 and v2
+  - Event tracking with cohort + version tags
+  - CardWizard routes to correct endpoint based on cohort
+- **Clarified product architecture** — templates + AI text (no AI image generation)
 
 **Completed features:**
 - Wizard flow at `/create` (name, relationship, occasion, vibe, traits)
-- AI message generation (Gemini + ADC Foundation Model)
-- Image prompt composition via ADC
+- AI message generation v1 (concatenation) + v2 (composition-aware)
+- A/B testing with analytics tracking
 - Card gallery at `/card`
 - Shopping cart and Stripe checkout
 - Webhook handler saves orders to Supabase
 - Lob fulfillment for physical cards
 - $2 customization fee for personalized cards
 
-**ADC Foundation Model (src/lib/adc/):**
-```
-src/lib/adc/
-├── index.ts              # Exports CURRENT_VERSION
-├── types.ts              # GenerationInput, CardStyle, Vibe, etc.
-└── v1/
-    ├── compose.ts        # Core composition engine
-    ├── components/       # tones, traits, occasions, styles
-    └── prompts/          # text.ts, image.ts builders
-```
-
 **Next up:**
+- Run A/B test and analyze v1 vs v2 performance
 - Email delivery for digital cards (SendGrid integration)
 - Production deployment checklist
-- Lob webhook for delivery tracking
-- ADC v1.1: Quality refinements based on user feedback
 
 **Known issues:**
 - Pre-existing type error in `src/app/api/webhooks/stripe/route.ts:161` (variant type)

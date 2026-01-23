@@ -5,4 +5,3 @@
 export * from './tones';
 export * from './traits';
 export * from './occasions';
-export * from './styles';

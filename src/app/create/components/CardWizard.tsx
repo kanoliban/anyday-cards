@@ -1,8 +1,10 @@
 'use client';
 
 import { ArrowLeft, Check, Sparkles } from 'lucide-react';
-import { useCallback, useMemo, useState } from 'react';
+import { useCallback, useMemo, useRef, useState } from 'react';
 
+import { getEffectiveEndpoint } from '~/src/lib/ab-testing';
+import { trackMessageGenerated, trackMessageRegenerated } from '~/src/lib/analytics';
 import Button from '~/src/components/ui/Button';
 import { cn } from '~/src/util';
 
@@ -537,6 +539,7 @@ export default function CardWizard({ card, onComplete, onBack }: Props) {
   const [variant, setVariant] = useState<CardVariant>('digital');
   const [generatedMessage, setGeneratedMessage] = useState('');
   const [isGenerating, setIsGenerating] = useState(false);
+  const regenerationCountRef = useRef(0);
   const [added, setAdded] = useState(false);
 
   const addItem = useCartStore((s) => s.addItem);
@@ -603,8 +606,11 @@ export default function CardWizard({ card, onComplete, onBack }: Props) {
 
   const handleGenerateMessage = async () => {
     setIsGenerating(true);
+    const isRegenerate = regenerationCountRef.current > 0;
+
     try {
-      const response = await fetch('/api/generate', {
+      const endpoint = getEffectiveEndpoint();
+      const response = await fetch(endpoint, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -629,6 +635,22 @@ export default function CardWizard({ card, onComplete, onBack }: Props) {
       if (response.ok) {
         const data = await response.json();
         setGeneratedMessage(data.message);
+
+        // Track analytics with cohort and version
+        const trackingMetadata = {
+          occasion: wizardAnswers.occasion,
+          relationship: wizardAnswers.relationshipType,
+          vibes: wizardAnswers.vibes,
+          isFallback: data.isFallback,
+        };
+
+        if (isRegenerate) {
+          regenerationCountRef.current += 1;
+          trackMessageRegenerated(data.version, regenerationCountRef.current, trackingMetadata);
+        } else {
+          regenerationCountRef.current = 1;
+          trackMessageGenerated(data.version, trackingMetadata);
+        }
       }
     } catch {
       // Silently fail

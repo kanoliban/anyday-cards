@@ -32,18 +32,6 @@ export interface TextGenerationOutput {
   version: string;
 }
 
-export interface ImageGenerationInput extends GenerationInput {
-  // Generated message to display on card
-  message: string;
-  // Style overrides
-  style?: CardStyle;
-}
-
-export interface ImageGenerationOutput {
-  prompt: string;
-  version: string;
-}
-
 export type Vibe = 'funny' | 'heartfelt' | 'spicy' | 'nostalgic' | 'inspiring';
 
 export type HumorType = 'insideJokes' | 'dryWit' | 'overTheTop' | 'punny';
