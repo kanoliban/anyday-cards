@@ -167,14 +167,13 @@ export default function AnswerSummary({ className }: Props) {
         </div>
 
         <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
-          <AnimatePresence mode="popLayout">
+          <AnimatePresence mode="sync">
             {items.map((item) => (
               <motion.div
                 key={item.key}
                 initial={{ opacity: 0, x: -10 }}
                 animate={{ opacity: 1, x: 0 }}
                 exit={{ opacity: 0, x: -10 }}
-                layout
                 className="flex items-center gap-1.5"
               >
                 <span className="text-stone-400">{item.icon}</span>
