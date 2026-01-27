@@ -158,15 +158,15 @@ export default function AnswerSummary({ className }: Props) {
         className
       )}
     >
-      <div className="flex items-center gap-6 overflow-x-auto">
-        <div className="flex shrink-0 items-center gap-2">
+      <div className="flex flex-wrap items-center gap-x-6 gap-y-2">
+        <div className="flex items-center gap-2">
           <Sparkles className="size-4 text-stone-400" />
           <span className="font-mono text-xs font-bold uppercase tracking-wide text-stone-400">
             Your Card Details
           </span>
         </div>
 
-        <div className="flex items-center gap-4">
+        <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
           <AnimatePresence mode="popLayout">
             {items.map((item) => (
               <motion.div
@@ -175,7 +175,7 @@ export default function AnswerSummary({ className }: Props) {
                 animate={{ opacity: 1, x: 0 }}
                 exit={{ opacity: 0, x: -10 }}
                 layout
-                className="flex shrink-0 items-center gap-1.5"
+                className="flex items-center gap-1.5"
               >
                 <span className="text-stone-400">{item.icon}</span>
                 <span className="font-mono text-xs uppercase tracking-wide text-stone-400">
