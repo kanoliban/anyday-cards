@@ -156,7 +156,7 @@ function DraggableCard({
       className="absolute cursor-pointer touch-none"
     >
       <div
-        className="relative overflow-hidden rounded border-2 border-white bg-white shadow-md"
+        className="relative overflow-hidden rounded border-2 border-panel-border bg-panel-background shadow-md"
         style={{ width: cardWidth, height: cardHeight }}
       >
         <Image
@@ -317,8 +317,8 @@ export default function MiniCanvas({ className }: { className?: string }) {
             className="absolute origin-bottom-left -translate-x-px -translate-y-6 rotate-90 scale-[0.6]"
             collection={collection}
             onCollectionClick={handleCollectionClick}
-            onCollectionMouseOver={() => {}}
-            onCollectionFocus={() => {}}
+            onCollectionMouseOver={() => { }}
+            onCollectionFocus={() => { }}
           />
         </div>
 
@@ -351,7 +351,7 @@ export default function MiniCanvas({ className }: { className?: string }) {
               exit={{ opacity: 0 }}
               className="pointer-events-none absolute inset-0 flex items-center justify-center"
             >
-              <span className="rounded-full bg-white/80 px-3 py-1.5 text-xs font-medium text-stone-500 shadow-sm">
+              <span className="rounded-full bg-panel-background/80 px-3 py-1.5 text-xs font-medium text-text-muted shadow-sm">
                 Drag to explore
               </span>
             </motion.div>
