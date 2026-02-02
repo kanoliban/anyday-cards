@@ -36,7 +36,7 @@
   --color-panel-border: var(--panel-border);
   --color-panel-overlay: var(--panel-overlay);
 
-  --shadow-card: 0px 0px 20px var(--panel-shadow) / 0.1;
+  --shadow-card: 0px 0px 20px color-mix(in srgb, var(--panel-shadow), transparent 90%);
 
   --breakpoint-xxs: 360px;
   --breakpoint-xs: 475px;
@@ -170,9 +170,6 @@ button {
 }
 
 @layer base {
-  * {
-    @apply border-border outline-ring/50;
-  }
   body {
     @apply bg-background text-foreground;
   }
