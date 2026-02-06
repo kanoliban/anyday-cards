@@ -2,6 +2,8 @@
 
 AI-powered personalized greeting cards with a wizard flow that captures recipient details to generate meaningful messages.
 
+For agent workflow and compounding notes, see `AGENTS.md` and `/.codex/`.
+
 ## Build Commands
 
 ```bash
