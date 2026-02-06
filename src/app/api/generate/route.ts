@@ -1,9 +1,12 @@
-import { GoogleGenerativeAI } from '@google/generative-ai';
+import OpenAI from 'openai';
 import { NextResponse } from 'next/server';
 import { z } from 'zod';
 
 import { buildTextPrompt, getTextFallback, ADC_VERSION } from '~/src/lib/adc';
 import type { GenerationInput } from '~/src/lib/adc';
+import { generateTextWithOpenAI } from '~/src/lib/adc/openai';
+import { buildMessageSpec } from '~/src/lib/adc/spec';
+import { buildRepairPrompt, validateGeneratedMessage } from '~/src/lib/adc/validate';
 
 const generateSchema = z.object({
   // Required fields
@@ -38,7 +41,7 @@ export async function POST(req: Request) {
       );
     }
 
-    const input: GenerationInput = parsed.data;
+    const input: GenerationInput = buildMessageSpec(parsed.data);
 
     // Log generation request with ADC version for analytics/debugging
     console.log('[ADC]', {
@@ -49,7 +52,7 @@ export async function POST(req: Request) {
       hasTraits: !!input.quickTraits?.length,
     });
 
-    const apiKey = process.env.GOOGLE_GEMINI_API_KEY;
+    const apiKey = process.env.OPENAI_API_KEY;
     if (!apiKey) {
       // Return fallback when no API key
       const fallback = getTextFallback(input);
@@ -63,14 +66,63 @@ export async function POST(req: Request) {
     // Use ADC Foundation Model to compose the prompt
     const { prompt, version } = buildTextPrompt(input);
 
-    const genAI = new GoogleGenerativeAI(apiKey);
-    const model = genAI.getGenerativeModel({ model: 'gemini-2.0-flash' });
+    const client = new OpenAI({ apiKey });
+    const model =
+      process.env.OPENAI_MODEL && process.env.OPENAI_MODEL.trim()
+        ? process.env.OPENAI_MODEL.trim()
+        : 'gpt-4.1-mini';
 
-    const result = await model.generateContent(prompt);
-    const response = result.response;
-    const generatedText = response.text().trim();
+    const maxOutputTokens = 180;
+    const temperature = 0.75;
+
+    let generated = await generateTextWithOpenAI({
+      client,
+      model,
+      userMessage: prompt,
+      maxOutputTokens,
+      temperature,
+    });
+    let generatedText = generated.text;
+
+    // Validate output and attempt exactly one repair pass if it violates constraints.
+    let validation = validateGeneratedMessage(generatedText, input);
+    let repairUsed = false;
+    if (!validation.ok) {
+      const repairInput = buildRepairPrompt({
+        userMessage: prompt,
+        draft: generatedText,
+        validation,
+      });
+      const repaired = await generateTextWithOpenAI({
+        client,
+        model,
+        userMessage: repairInput,
+        maxOutputTokens,
+        temperature: Math.max(0.4, temperature - 0.15),
+      });
+      const validation2 = validateGeneratedMessage(repaired.text, input);
+      if (validation2.ok) {
+        generated = repaired;
+        generatedText = repaired.text;
+        validation = validation2;
+        repairUsed = true;
+      }
+    }
 
     if (!generatedText) {
+      const fallback = getTextFallback(input);
+      return NextResponse.json({
+        message: fallback.message,
+        version: fallback.version,
+        isFallback: true,
+      });
+    }
+
+    if (!validation.ok) {
+      console.warn('[ADC] Output failed validation, falling back.', {
+        issues: validation.issues,
+        sentenceCount: validation.sentenceCount,
+      });
       const fallback = getTextFallback(input);
       return NextResponse.json({
         message: fallback.message,
@@ -82,6 +134,10 @@ export async function POST(req: Request) {
     return NextResponse.json({
       message: generatedText,
       version,
+      isFallback: false,
+      provider: generated.provider,
+      usage: generated.usage,
+      repairUsed,
     });
   } catch (error) {
     console.error('Generate message error:', error);

@@ -59,7 +59,10 @@ export function LandingNav() {
             </button>
           ))}
           <Button asChild variant="secondary" size="sm">
-            <Link href="/create/wizard">Create Card</Link>
+            <Link href="/create/wizard">Card Wizard</Link>
+          </Button>
+          <Button asChild variant="primary" size="sm">
+            <Link href="/create">Card Canvas</Link>
           </Button>
         </div>
 
@@ -90,7 +93,10 @@ export function LandingNav() {
             ))}
             <hr className="border-panel-border" />
             <Button asChild variant="secondary" className="w-full justify-center">
-              <Link href="/create/wizard">Create Card</Link>
+              <Link href="/create/wizard">Card Wizard</Link>
+            </Button>
+            <Button asChild variant="primary" className="w-full justify-center">
+              <Link href="/create">Card Canvas</Link>
             </Button>
           </div>
         </div>

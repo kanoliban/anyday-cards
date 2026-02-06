@@ -1,7 +1,7 @@
 import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: 'Create Your Card | AnyDayCard',
+  title: 'Card Wizard | AnyDayCard',
 };
 
 export default function WizardLayout({ children }: { children: React.ReactNode }) {

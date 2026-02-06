@@ -9,12 +9,11 @@ import Description from './components/Description';
 import StampsContainer from './components/Stamps/StampsContainer';
 import SVGFilters from './components/SVGFilters';
 
-import './page.css';
 
 export const metadata: Metadata = {
   title: 'Cards | AnyDayCard',
   description:
-    'Browse our collection of AI-generated greeting cards. Buy as-is or customize with our wizard.',
+    'Browse our collection of greeting cards. Buy as-is or write a personal message with our guide.',
 };
 
 export default function CardsPage() {

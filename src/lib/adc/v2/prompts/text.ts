@@ -194,6 +194,8 @@ function buildUserMessage(input: GenerationInput): string {
     recipientName,
     relationship,
     occasion,
+    cardName,
+    cardTone,
     vibes,
     humorType,
     heartfeltDepth,
@@ -213,6 +215,14 @@ function buildUserMessage(input: GenerationInput): string {
 
   // Relationship context
   lines.push(`Relationship: ${relationship.toLowerCase()}`);
+
+  // Card design metadata
+  if (cardTone) {
+    lines.push(`Card tone: ${cardTone}`);
+  }
+  if (cardName) {
+    lines.push(`Card design: ${cardName}`);
+  }
 
   // Vibes/tones
   if (vibes?.length) {
@@ -326,6 +336,10 @@ function formatTrait(trait: string): string {
     alwaysLate: 'always late',
     organizedAF: 'super organized',
     creativeType: 'creative type',
+    teaDrinker: 'tea drinker',
+    neatFreak: 'neat freak',
+    creativeMess: 'creative mess',
+    lifeOfTheParty: 'life of the party',
   };
   return mapping[trait] || trait.replace(/([A-Z])/g, ' $1').trim().toLowerCase();
 }
@@ -362,6 +376,13 @@ function formatHeartfeltDepth(depth: string): string {
  */
 function formatDetailValue(key: string, value: string): string {
   const valueMapping: Record<string, Record<string, string>> = {
+    friendTexture: {
+      bestie: 'best friend',
+      old: 'old friend',
+      new: 'new friend',
+      workFriend: 'work friend',
+      distantClose: 'distant but close',
+    },
     friendDuration: {
       newFriend: 'pretty new',
       fewYears: 'a few years',
@@ -378,6 +399,10 @@ function formatDetailValue(key: string, value: string): string {
       spouse: 'spouse',
       longTermPartner: 'long-term partner',
       engaged: 'engaged',
+      boyfriend: 'boyfriend',
+      girlfriend: 'girlfriend',
+      partner: 'partner',
+      fiance: 'fiance(e)',
     },
     datingDuration: {
       justMet: 'just met',
@@ -395,18 +420,22 @@ function formatDetailValue(key: string, value: string): string {
       dad: 'Dad',
       stepParent: 'step-parent',
       parentFigure: 'parent figure',
+      stepmom: 'Stepmom',
+      stepdad: 'Stepdad',
     },
     childAge: {
       baby: 'baby/toddler',
       kid: 'kid (3-12)',
       teen: 'teenager',
       adult: 'adult',
+      youngAdult: 'young adult',
     },
     siblingType: {
       brother: 'brother',
       sister: 'sister',
       stepSibling: 'step-sibling',
       halfSibling: 'half-sibling',
+      siblingInLaw: 'in-law',
     },
     birthOrder: {
       older: 'they\'re older',
@@ -418,6 +447,7 @@ function formatDetailValue(key: string, value: string): string {
       grandpa: 'Grandpa',
       nana: 'Nana',
       papa: 'Papa',
+      greatGrandparent: 'great-grandparent',
     },
     grandparentStyle: {
       spoiler: 'the spoiler',
@@ -431,11 +461,25 @@ function formatDetailValue(key: string, value: string): string {
       mentor: 'mentor',
       client: 'client',
       employee: 'employee',
+      colleague: 'coworker',
     },
     professionalTone: {
       casual: 'pretty casual',
       warmPro: 'warm but professional',
       formal: 'formal',
+      warm: 'warm but appropriate',
+    },
+    parentRelationshipVibe: {
+      close: 'very close',
+      loving: 'loving but distant',
+      complicated: 'complicated',
+      reconnecting: 'reconnecting',
+    },
+    grandparentRelationship: {
+      veryClose: 'very close',
+      loving: 'loving',
+      reconnecting: 'reconnecting',
+      memorial: 'honoring their memory',
     },
   };
 
@@ -456,6 +500,7 @@ function formatDetailKey(key: string): string {
     howTheyveHelped: 'How they\'ve helped',
     whatMakesThemSpecial: 'What makes them special',
     // Friend
+    friendTexture: 'Friendship type',
     friendDuration: 'How long we\'ve been friends',
     friendHowMet: 'How we met',
     friendSpecial: 'What makes them a good friend',
@@ -473,6 +518,7 @@ function formatDetailKey(key: string): string {
     datingIntensity: 'Card intensity',
     // Parent
     whichParent: 'Which parent',
+    parentRelationshipVibe: 'Relationship vibe',
     parentMeaning: 'What they mean to me',
     parentLesson: 'A lesson they taught me',
     parentAlways: 'They always',
@@ -485,6 +531,7 @@ function formatDetailKey(key: string): string {
     // Grandparent
     whichGrandparent: 'Grandparent',
     grandparentStyle: 'Their style',
+    grandparentRelationship: 'Relationship vibe',
     grandparentMemory: 'A memory with them',
     grandparentAlways: 'They always',
     // Child

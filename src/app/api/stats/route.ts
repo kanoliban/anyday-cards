@@ -4,6 +4,9 @@ import { NextResponse } from 'next/server';
 import { createClient } from '~/src/supabase/server';
 
 export async function GET(req: Request) {
+  if (process.env.NODE_ENV !== 'production') {
+    return NextResponse.json({ count: 0 }, { status: 200 });
+  }
   const { searchParams } = new URL(req.url);
 
   try {
@@ -27,11 +30,14 @@ export async function GET(req: Request) {
     return NextResponse.json({ count });
   } catch (e) {
     console.error(e);
-    NextResponse.json({ message: 'Something went wrong.' }, { status: 500 });
+    return NextResponse.json({ message: 'Something went wrong.' }, { status: 500 });
   }
 }
 
 export async function POST(req: Request) {
+  if (process.env.NODE_ENV !== 'production') {
+    return NextResponse.json({ message: 'Not tracking.', count: 0 }, { status: 200 });
+  }
   const cookieStore = await cookies();
   if (cookieStore.get('notrack')) {
     return NextResponse.json({ message: 'Not tracking.', count: 0 }, { status: 200 });

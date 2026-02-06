@@ -23,6 +23,7 @@ const PixelatedReveal = dynamic(() => import('./PixelatedReveal'), { ssr: false 
 const maxClicks = 5;
 
 const submitClicks = (amount: number) => {
+  if (process.env.NODE_ENV !== 'production') return Promise.resolve();
   const params = new URLSearchParams([
     ['pathname', '/#sneak-peek'],
     ['type', 'action'],

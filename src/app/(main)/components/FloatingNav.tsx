@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { useSelectedLayoutSegment } from 'next/navigation';
+import { usePathname } from 'next/navigation';
 
 import useScroll from '~/src/hooks/useScroll';
 
@@ -12,14 +12,18 @@ import { cn } from '~/src/util';
 
 const links = {
   '/': { label: 'Home Page', width: 6.5 },
-  '/create': { label: 'Create Card', width: 7 },
+  '/create/wizard': { label: 'Card Wizard', width: 8.5 },
+  '/create': { label: 'Card Canvas', width: 8.5 },
   '/card': { label: 'Card Gallery', width: 7.5 },
   '/about': { label: 'About Us', width: 5.5 },
 };
 
 export default function Navabar() {
-  const pathSegment = `/${useSelectedLayoutSegment() || ''}` as keyof typeof links;
-  const activeIndex = Object.keys(links).findIndex((path) => pathSegment === path);
+  const pathname = usePathname();
+  const activePath = (Object.keys(links) as Array<keyof typeof links>)
+    .filter((path) => pathname === path || (path !== '/' && pathname.startsWith(`${path}/`)))
+    .sort((a, b) => String(b).length - String(a).length)[0] ?? '/';
+  const activeIndex = Object.keys(links).findIndex((path) => activePath === path);
   const { y } = useScroll();
 
   const highlightOffset = `${
@@ -36,7 +40,7 @@ export default function Navabar() {
         <div
           className="bg-theme-3 absolute h-[90%] rounded-full transition-all duration-300 ease-out"
           style={{
-            width: `${links[pathSegment]?.width}rem`,
+            width: `${links[activePath]?.width}rem`,
             left: highlightOffset,
           }}
         />

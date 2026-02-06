@@ -4,6 +4,7 @@ import { useEffect } from 'react';
 
 export function useViewLogger(pathname: string) {
   useEffect(() => {
+    if (process.env.NODE_ENV !== 'production') return;
     if (!pathname) return;
     const params = new URLSearchParams([
       ['pathname', pathname],

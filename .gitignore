@@ -28,6 +28,9 @@ yarn-error.log*
 # local env files
 .env*.local
 
+# ai receipts (local tuning artifact)
+ai-receipts.json
+
 # vercel
 .vercel
 
@@ -39,3 +42,7 @@ next-env.d.ts
 # style tokens
 /tokens/out/
 /tokens/style/
+
+# local design/artifacts
+/Card Designs/
+/anyday-variant/

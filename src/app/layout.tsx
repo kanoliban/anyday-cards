@@ -4,6 +4,7 @@ import { Archivo, IBM_Plex_Mono, Inter, Libertinus_Serif } from 'next/font/googl
 import './globals.css';
 
 import Script from 'next/script';
+import { Agentation } from 'agentation';
 
 import { ThemeProvider } from './(main)/components/ThemeProvider';
 
@@ -48,6 +49,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         className={`${inter.variable} ${archivo.variable} ${ibmPlexMono.variable} ${libertinusSerif.variable} font-sans min-h-screen bg-background text-foreground`}
       >
         <ThemeProvider>{children}</ThemeProvider>
+        {process.env.NODE_ENV === 'development' && <Agentation />}
       </body>
       {process.env.NODE_ENV === 'production' && (
         <Script

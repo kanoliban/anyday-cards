@@ -125,6 +125,7 @@ export default function Cards({ className, ...props }: ComponentProps<typeof mot
   const store = useCardStore();
   const selectedCardId = useCardStore((s) => s.selectedCardId);
   const collectionKey = useCardStore((s) => s.collection);
+  const wizardMode = useCardStore((s) => s.wizardMode);
   const setZoomEnabled = useCardStore((s) => s.setZoomEnabled);
   const setSelectedCardId = useCardStore((s) => s.setSelectedCardId);
 
@@ -793,7 +794,7 @@ export default function Cards({ className, ...props }: ComponentProps<typeof mot
                 )}
               >
                 <FocusLock
-                  disabled={selectedCardId !== card.id}
+                  disabled={selectedCardId !== card.id || wizardMode}
                   group={`card-${card.id}`}
                   onDeactivation={handleCardFocusReturn}
                 >
@@ -845,7 +846,7 @@ export default function Cards({ className, ...props }: ComponentProps<typeof mot
                                 </div>
                                 <div className="w-full border-t border-dashed border-stone-300"></div>
                                 <div className="max-w-[100vw] p-5">
-                                  {selectedCard && <CardPurchasePanel />}
+                                  {selectedCard && <CardPurchasePanel showWizardCta={false} showZoomToggle />}
                                 </div>
                               </div>
                             </DrawerContent>
@@ -934,7 +935,7 @@ export default function Cards({ className, ...props }: ComponentProps<typeof mot
           </AnimatePresence>
         </div>
         {selectedCard && (
-          <FocusLock disabled={!store.isZoomed || drawerOpen} returnFocus>
+          <FocusLock disabled={!store.isZoomed || drawerOpen || wizardMode} returnFocus>
             <Loupe
               gridCellSize={gridCellSize}
               className={cn({
@@ -959,7 +960,7 @@ export default function Cards({ className, ...props }: ComponentProps<typeof mot
               transition={{ type: 'spring', stiffness: 300, damping: 30 }}
               className="pointer-events-auto absolute right-6 bottom-6 z-40 hidden w-72 lg:block"
             >
-              <CardPurchasePanel />
+              <CardPurchasePanel showWizardCta={false} showZoomToggle />
             </motion.div>
           )}
         </AnimatePresence>

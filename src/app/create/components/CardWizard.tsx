@@ -1,7 +1,7 @@
 'use client';
 
-import { ArrowLeft, Check, Sparkles } from 'lucide-react';
-import { useCallback, useMemo, useRef, useState } from 'react';
+import { ArrowLeft, Check, Gift, Sparkles } from 'lucide-react';
+import { useCallback, useMemo, useRef, useState, useEffect } from 'react';
 
 import { getEffectiveEndpoint } from '~/src/lib/ab-testing';
 import { trackMessageGenerated, trackMessageRegenerated } from '~/src/lib/analytics';
@@ -12,465 +12,28 @@ import { useCartStore } from '../../(main)/shop/store';
 import type {
   Card,
   CardVariant,
-  HeartfeltDepth,
-  HumorType,
-  OccasionType,
-  QuickTrait,
   RelationshipType,
-  VibeType,
   WizardAnswers,
   WizardStep,
 } from '../models';
 import { useCardStore } from '../store';
+import {
+  HEARTFELT_OPTIONS,
+  HUMOR_OPTIONS,
+  OCCASION_OPTIONS,
+  QUICK_TRAIT_OPTIONS,
+  RELATIONSHIP_OPTIONS,
+  RELATIONSHIP_QUESTIONS,
+  STEP_LABELS,
+  STEP_ORDER,
+  VIBE_OPTIONS,
+} from './cardWizardConfig';
 
 type Props = {
   card: Card;
   onComplete?: () => void;
   onBack?: () => void;
-};
-
-const STEP_ORDER: WizardStep[] = [
-  'name',
-  'relationship',
-  'occasion',
-  'vibe',
-  'humorType',
-  'heartfeltDepth',
-  'relationshipQuestions',
-  'quickTraits',
-  'preview',
-];
-
-const STEP_LABELS: Record<WizardStep, string> = {
-  name: 'Recipient',
-  relationship: 'Relationship',
-  occasion: 'Occasion',
-  coupleMode: 'Couple Mode',
-  senderName: 'Your Name',
-  coupleStory: 'Your Story',
-  vibe: 'Vibe',
-  humorType: 'Humor Style',
-  heartfeltDepth: 'Depth',
-  relationshipQuestions: 'Details',
-  quickTraits: 'Traits',
-  preview: 'Preview',
-};
-
-const RELATIONSHIP_OPTIONS: { value: RelationshipType; label: string; emoji: string }[] = [
-  { value: 'partner', label: 'Partner', emoji: '💕' },
-  { value: 'friend', label: 'Friend', emoji: '🤝' },
-  { value: 'parent', label: 'Parent', emoji: '👨‍👩‍👧' },
-  { value: 'child', label: 'Child', emoji: '👶' },
-  { value: 'sibling', label: 'Sibling', emoji: '👯' },
-  { value: 'professional', label: 'Professional', emoji: '💼' },
-  { value: 'dating', label: 'Dating', emoji: '💋' },
-  { value: 'grandparent', label: 'Grandparent', emoji: '👴' },
-  { value: 'other', label: 'Other', emoji: '✨' },
-];
-
-const OCCASION_OPTIONS: { value: OccasionType; label: string; emoji: string }[] = [
-  { value: 'birthday', label: 'Birthday', emoji: '🎂' },
-  { value: 'anniversary', label: 'Anniversary', emoji: '💍' },
-  { value: 'holiday', label: 'Holiday', emoji: '🎄' },
-  { value: 'support', label: 'Support', emoji: '🤗' },
-  { value: 'achievement', label: 'Achievement', emoji: '🏆' },
-  { value: 'miss', label: 'Missing You', emoji: '💭' },
-  { value: 'justBecause', label: 'Just Because', emoji: '💝' },
-  { value: 'apology', label: 'Apology', emoji: '🙏' },
-  { value: 'thanks', label: 'Thank You', emoji: '🙌' },
-  { value: 'congratulations', label: 'Congrats', emoji: '🎉' },
-];
-
-const VIBE_OPTIONS: { value: VibeType; label: string; emoji: string }[] = [
-  { value: 'funny', label: 'Funny', emoji: '😂' },
-  { value: 'heartfelt', label: 'Heartfelt', emoji: '❤️' },
-  { value: 'spicy', label: 'Spicy', emoji: '🌶️' },
-  { value: 'weird', label: 'Weird', emoji: '🤪' },
-  { value: 'grateful', label: 'Grateful', emoji: '🙏' },
-  { value: 'nostalgic', label: 'Nostalgic', emoji: '📷' },
-  { value: 'encouraging', label: 'Encouraging', emoji: '💪' },
-  { value: 'apologetic', label: 'Apologetic', emoji: '😔' },
-  { value: 'proud', label: 'Proud', emoji: '🌟' },
-  { value: 'playful', label: 'Playful', emoji: '😜' },
-];
-
-const HUMOR_OPTIONS: { value: HumorType; label: string; description: string }[] = [
-  { value: 'insideJokes', label: 'Inside Jokes', description: 'References only you two get' },
-  { value: 'playfulTeasing', label: 'Playful Teasing', description: 'Lovingly poking fun' },
-  { value: 'absurdist', label: 'Absurdist', description: 'Random and chaotic' },
-  { value: 'dryDeadpan', label: 'Dry & Deadpan', description: 'Subtle and understated' },
-  { value: 'selfDeprecating', label: 'Self-Deprecating', description: 'Making fun of yourself' },
-  { value: 'wholesomeSilly', label: 'Wholesome Silly', description: 'Sweet and goofy' },
-];
-
-const HEARTFELT_OPTIONS: { value: HeartfeltDepth; label: string; description: string }[] = [
-  { value: 'warmLight', label: 'Warm & Light', description: 'Sweet but not too heavy' },
-  { value: 'feelSeen', label: 'Feel Seen', description: 'Deeply personal and meaningful' },
-  { value: 'mightCry', label: 'Might Cry', description: 'All the feelings' },
-];
-
-const QUICK_TRAIT_OPTIONS: { value: QuickTrait; label: string; emoji: string }[] = [
-  { value: 'dogPerson', label: 'Dog Person', emoji: '🐕' },
-  { value: 'catPerson', label: 'Cat Person', emoji: '🐱' },
-  { value: 'coffeeAddict', label: 'Coffee Addict', emoji: '☕' },
-  { value: 'teaDrinker', label: 'Tea Drinker', emoji: '🍵' },
-  { value: 'gymRat', label: 'Gym Rat', emoji: '🏋️' },
-  { value: 'hatesMornings', label: 'Hates Mornings', emoji: '😴' },
-  { value: 'alwaysLate', label: 'Always Late', emoji: '⏰' },
-  { value: 'plantParent', label: 'Plant Parent', emoji: '🌿' },
-  { value: 'gamer', label: 'Gamer', emoji: '🎮' },
-  { value: 'bookworm', label: 'Bookworm', emoji: '📚' },
-  { value: 'foodie', label: 'Foodie', emoji: '🍜' },
-  { value: 'homebody', label: 'Homebody', emoji: '🏠' },
-  { value: 'overthinker', label: 'Overthinker', emoji: '🧠' },
-  { value: 'crierAtMovies', label: 'Cries at Movies', emoji: '😭' },
-  { value: 'neatFreak', label: 'Neat Freak', emoji: '✨' },
-  { value: 'creativeMess', label: 'Creative Mess', emoji: '🎨' },
-  { value: 'workaholic', label: 'Workaholic', emoji: '💻' },
-  { value: 'adventureSeeker', label: 'Adventure Seeker', emoji: '🧗' },
-  { value: 'introvert', label: 'Introvert', emoji: '🤫' },
-  { value: 'lifeOfTheParty', label: 'Life of the Party', emoji: '🎊' },
-];
-
-// Relationship-specific questions
-interface RelationshipQuestion {
-  key: string;
-  question: string;
-  type: 'text' | 'select' | 'pills';
-  options?: { value: string; label: string }[];
-  placeholder?: string;
-}
-
-const RELATIONSHIP_QUESTIONS: Record<RelationshipType, RelationshipQuestion[]> = {
-  partner: [
-    {
-      key: 'partnerSubtype',
-      question: 'What kind of partner?',
-      type: 'pills',
-      options: [
-        { value: 'spouse', label: 'Spouse' },
-        { value: 'boyfriend', label: 'Boyfriend' },
-        { value: 'girlfriend', label: 'Girlfriend' },
-        { value: 'partner', label: 'Partner' },
-        { value: 'fiance', label: 'Fiancé(e)' },
-      ],
-    },
-    {
-      key: 'partnerDuration',
-      question: 'How long have you been together?',
-      type: 'pills',
-      options: [
-        { value: 'new', label: 'Just started' },
-        { value: '1year', label: '~1 year' },
-        { value: 'years', label: 'Several years' },
-        { value: 'decade', label: 'A decade+' },
-      ],
-    },
-    {
-      key: 'partnerRecentMoment',
-      question: 'A recent moment that made you smile?',
-      type: 'text',
-      placeholder: 'e.g., When they made me coffee without asking',
-    },
-    {
-      key: 'partnerTheirThing',
-      question: "What's something they're obsessed with?",
-      type: 'text',
-      placeholder: 'e.g., True crime podcasts, houseplants',
-    },
-    {
-      key: 'partnerInsideJoke',
-      question: 'An inside joke or phrase only you two get?',
-      type: 'text',
-      placeholder: 'Optional - makes it extra personal',
-    },
-  ],
-  friend: [
-    {
-      key: 'friendTexture',
-      question: 'What kind of friendship?',
-      type: 'pills',
-      options: [
-        { value: 'bestie', label: 'Best friend' },
-        { value: 'old', label: 'Old friend' },
-        { value: 'new', label: 'New friend' },
-        { value: 'workFriend', label: 'Work friend' },
-        { value: 'distantClose', label: 'Distant but close' },
-      ],
-    },
-    {
-      key: 'friendHowMet',
-      question: 'How did you meet?',
-      type: 'text',
-      placeholder: 'e.g., College roommates, through mutual friends',
-    },
-    {
-      key: 'friendSharedMemory',
-      question: 'A favorite memory together?',
-      type: 'text',
-      placeholder: 'e.g., That road trip where we got lost',
-    },
-    {
-      key: 'friendTheyreTheOneWho',
-      question: "They're the one who...",
-      type: 'text',
-      placeholder: 'e.g., always answers at 2am, makes the best playlists',
-    },
-    {
-      key: 'friendInsideJoke',
-      question: 'An inside joke?',
-      type: 'text',
-      placeholder: 'Optional',
-    },
-  ],
-  parent: [
-    {
-      key: 'parentWhich',
-      question: 'Which parent?',
-      type: 'pills',
-      options: [
-        { value: 'mom', label: 'Mom' },
-        { value: 'dad', label: 'Dad' },
-        { value: 'stepmom', label: 'Stepmom' },
-        { value: 'stepdad', label: 'Stepdad' },
-        { value: 'parentFigure', label: 'Parent figure' },
-      ],
-    },
-    {
-      key: 'parentRelationshipVibe',
-      question: "What's your relationship like?",
-      type: 'pills',
-      options: [
-        { value: 'close', label: 'Very close' },
-        { value: 'loving', label: 'Loving but distant' },
-        { value: 'complicated', label: 'Complicated' },
-        { value: 'reconnecting', label: 'Reconnecting' },
-      ],
-    },
-    {
-      key: 'parentTaughtYou',
-      question: 'Something they taught you?',
-      type: 'text',
-      placeholder: 'e.g., How to change a tire, to always be kind',
-    },
-    {
-      key: 'parentAlwaysSays',
-      question: 'Something they always say?',
-      type: 'text',
-      placeholder: 'e.g., "Call me when you get home"',
-    },
-    {
-      key: 'parentChildhoodMemory',
-      question: 'A childhood memory with them?',
-      type: 'text',
-      placeholder: 'Optional',
-    },
-  ],
-  child: [
-    {
-      key: 'childAge',
-      question: 'How old are they?',
-      type: 'pills',
-      options: [
-        { value: 'baby', label: 'Baby/Toddler' },
-        { value: 'kid', label: 'Kid (5-12)' },
-        { value: 'teen', label: 'Teen' },
-        { value: 'youngAdult', label: 'Young adult' },
-        { value: 'adult', label: 'Adult' },
-      ],
-    },
-    {
-      key: 'childCurrentPhase',
-      question: "What's their current phase?",
-      type: 'text',
-      placeholder: 'e.g., Dinosaurs, starting college, new job',
-    },
-    {
-      key: 'childProudMoment',
-      question: 'Something that made you proud recently?',
-      type: 'text',
-      placeholder: 'e.g., Stood up for a friend, got their first job',
-    },
-    {
-      key: 'childPersonality',
-      question: "They're the kind of kid who...",
-      type: 'text',
-      placeholder: 'e.g., makes everyone laugh, always has a book',
-    },
-  ],
-  sibling: [
-    {
-      key: 'siblingType',
-      question: 'What kind of sibling?',
-      type: 'pills',
-      options: [
-        { value: 'sister', label: 'Sister' },
-        { value: 'brother', label: 'Brother' },
-        { value: 'stepSibling', label: 'Step-sibling' },
-        { value: 'halfSibling', label: 'Half-sibling' },
-        { value: 'siblingInLaw', label: 'In-law' },
-      ],
-    },
-    {
-      key: 'siblingBirthOrder',
-      question: 'Birth order?',
-      type: 'pills',
-      options: [
-        { value: 'older', label: 'Older than me' },
-        { value: 'younger', label: 'Younger than me' },
-        { value: 'twin', label: 'Twin' },
-      ],
-    },
-    {
-      key: 'siblingDynamicNow',
-      question: "What's your dynamic now?",
-      type: 'pills',
-      options: [
-        { value: 'bestFriends', label: 'Best friends' },
-        { value: 'closeish', label: 'Close-ish' },
-        { value: 'lovinglyAnnoying', label: 'Lovingly annoying' },
-        { value: 'reconnecting', label: 'Reconnecting' },
-      ],
-    },
-    {
-      key: 'siblingChildhoodMemory',
-      question: 'A childhood memory together?',
-      type: 'text',
-      placeholder: 'e.g., Building forts, fighting over the remote',
-    },
-    {
-      key: 'siblingInsideJoke',
-      question: 'An inside joke?',
-      type: 'text',
-      placeholder: 'Optional',
-    },
-  ],
-  professional: [
-    {
-      key: 'professionalType',
-      question: 'Who are they to you?',
-      type: 'pills',
-      options: [
-        { value: 'boss', label: 'Boss/Manager' },
-        { value: 'colleague', label: 'Colleague' },
-        { value: 'mentor', label: 'Mentor' },
-        { value: 'client', label: 'Client' },
-        { value: 'employee', label: 'Employee' },
-      ],
-    },
-    {
-      key: 'professionalContext',
-      question: "What's the context?",
-      type: 'text',
-      placeholder: 'e.g., Leaving the company, promotion, project completed',
-    },
-    {
-      key: 'professionalWhatTheyDid',
-      question: 'What did they do that matters?',
-      type: 'text',
-      placeholder: 'e.g., Mentored me, helped land a big deal',
-    },
-    {
-      key: 'professionalToneCheck',
-      question: 'How formal should this be?',
-      type: 'pills',
-      options: [
-        { value: 'formal', label: 'Keep it professional' },
-        { value: 'warm', label: 'Warm but appropriate' },
-        { value: 'casual', label: 'We joke around' },
-      ],
-    },
-  ],
-  dating: [
-    {
-      key: 'datingHowLong',
-      question: 'How long have you been seeing each other?',
-      type: 'pills',
-      options: [
-        { value: 'justMet', label: 'Just met' },
-        { value: 'fewDates', label: 'A few dates' },
-        { value: 'coupleMonths', label: 'Couple months' },
-        { value: 'gettingSerious', label: 'Getting serious' },
-      ],
-    },
-    {
-      key: 'datingHowMet',
-      question: 'How did you meet?',
-      type: 'text',
-      placeholder: 'e.g., Dating app, through friends, coffee shop',
-    },
-    {
-      key: 'datingWhatYouLike',
-      question: 'What do you like most about them?',
-      type: 'text',
-      placeholder: "e.g., Their laugh, how they listen, they're so weird",
-    },
-    {
-      key: 'datingCardIntensity',
-      question: 'How intense should the card be?',
-      type: 'pills',
-      options: [
-        { value: 'light', label: 'Keep it light' },
-        { value: 'flirty', label: 'Flirty' },
-        { value: 'earnest', label: 'Earnest' },
-      ],
-    },
-  ],
-  grandparent: [
-    {
-      key: 'grandparentWhich',
-      question: 'Which grandparent?',
-      type: 'pills',
-      options: [
-        { value: 'grandma', label: 'Grandma' },
-        { value: 'grandpa', label: 'Grandpa' },
-        { value: 'greatGrandparent', label: 'Great-grandparent' },
-      ],
-    },
-    {
-      key: 'grandparentRelationship',
-      question: "What's your relationship like?",
-      type: 'pills',
-      options: [
-        { value: 'veryClose', label: 'Very close' },
-        { value: 'loving', label: 'Loving' },
-        { value: 'reconnecting', label: 'Reconnecting' },
-        { value: 'memorial', label: 'Honoring their memory' },
-      ],
-    },
-    {
-      key: 'grandparentMemory',
-      question: 'A memory with them?',
-      type: 'text',
-      placeholder: 'e.g., Baking cookies together, their stories',
-    },
-    {
-      key: 'grandparentTheyAlways',
-      question: 'They always...',
-      type: 'text',
-      placeholder: 'e.g., slip you money, make the best pie',
-    },
-  ],
-  other: [
-    {
-      key: 'otherDescribe',
-      question: 'How would you describe this person?',
-      type: 'text',
-      placeholder: 'e.g., Neighbor, teacher, therapist, online friend',
-    },
-    {
-      key: 'otherWhyCard',
-      question: 'Why are you sending this card?',
-      type: 'text',
-      placeholder: 'e.g., They helped me through something, moving away',
-    },
-    {
-      key: 'otherWhatToSay',
-      question: 'What do you most want to say?',
-      type: 'text',
-      placeholder: 'The heart of your message',
-    },
-  ],
+  size?: 'default' | 'fullscreen';
 };
 
 function PillButton({
@@ -478,21 +41,29 @@ function PillButton({
   onClick,
   children,
   emoji,
+  size = 'default',
 }: {
   selected: boolean;
   onClick: () => void;
   children: React.ReactNode;
   emoji?: string;
+  size?: 'default' | 'fullscreen';
 }) {
+  const isFullscreen = size === 'fullscreen';
   return (
     <button
       type="button"
       onClick={onClick}
       className={cn(
         'flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-sm transition-colors',
+        isFullscreen && 'px-4 py-2 text-base',
         selected
-          ? 'border-text-primary bg-text-primary text-panel-background'
-          : 'border-theme-2 text-text-secondary hover:border-text-secondary',
+          ? isFullscreen
+            ? 'border-stone-900 bg-stone-900 text-white'
+            : 'border-stone-900 bg-stone-900 text-white'
+          : isFullscreen
+            ? 'border-stone-300 bg-white text-stone-800 hover:border-stone-500'
+            : 'border-stone-300 bg-white text-stone-700 hover:border-stone-500',
       )}
     >
       {emoji && <span className="text-base">{emoji}</span>}
@@ -506,41 +77,56 @@ function OptionCard({
   onClick,
   title,
   description,
+  size = 'default',
 }: {
   selected: boolean;
   onClick: () => void;
   title: string;
   description: string;
+  size?: 'default' | 'fullscreen';
 }) {
+  const isFullscreen = size === 'fullscreen';
   return (
     <button
       type="button"
       onClick={onClick}
       className={cn(
         'flex flex-col gap-0.5 rounded-lg border p-3 text-left transition-colors',
+        isFullscreen && 'p-4',
         selected
-          ? 'border-text-primary bg-text-primary/5'
-          : 'border-theme-2 hover:border-text-secondary',
+          ? isFullscreen
+            ? 'border-stone-900 bg-white shadow-[0_6px_14px_rgba(0,0,0,0.08)]'
+            : 'border-stone-900 bg-white shadow-[0_6px_14px_rgba(0,0,0,0.08)]'
+          : isFullscreen
+            ? 'border-stone-300 bg-white hover:border-stone-500'
+            : 'border-stone-300 bg-white hover:border-stone-500',
       )}
     >
-      <span className="font-medium text-text-primary">{title}</span>
-      <span className="text-xs text-text-muted">{description}</span>
+      <span className={cn('font-medium text-stone-800', isFullscreen && 'text-lg text-stone-900')}>
+        {title}
+      </span>
+      <span className={cn('text-xs text-stone-600', isFullscreen && 'text-sm text-stone-600')}>
+        {description}
+      </span>
     </button>
   );
 }
 
-export default function CardWizard({ card, onComplete, onBack }: Props) {
+export default function CardWizard({ card, onComplete, onBack, size = 'default' }: Props) {
   const wizardStep = useCardStore((s) => s.wizardStep);
   const wizardAnswers = useCardStore((s) => s.wizardAnswers);
   const setWizardStep = useCardStore((s) => s.setWizardStep);
   const setWizardAnswer = useCardStore((s) => s.setWizardAnswer);
   const resetWizard = useCardStore((s) => s.resetWizard);
+  const isFullscreen = size === 'fullscreen';
 
   const [variant, setVariant] = useState<CardVariant>('digital');
   const [generatedMessage, setGeneratedMessage] = useState('');
   const [isGenerating, setIsGenerating] = useState(false);
+  const [generationError, setGenerationError] = useState<string | null>(null);
   const regenerationCountRef = useRef(0);
   const [added, setAdded] = useState(false);
+  const [introDismissed, setIntroDismissed] = useState(false);
 
   const addItem = useCartStore((s) => s.addItem);
   const setCartOpen = useCartStore((s) => s.setOpen);
@@ -606,6 +192,7 @@ export default function CardWizard({ card, onComplete, onBack }: Props) {
 
   const handleGenerateMessage = async () => {
     setIsGenerating(true);
+    setGenerationError(null);
     const isRegenerate = regenerationCountRef.current > 0;
 
     try {
@@ -632,28 +219,32 @@ export default function CardWizard({ card, onComplete, onBack }: Props) {
         }),
       });
 
-      if (response.ok) {
-        const data = await response.json();
-        setGeneratedMessage(data.message);
-
-        // Track analytics with cohort and version
-        const trackingMetadata = {
-          occasion: wizardAnswers.occasion,
-          relationship: wizardAnswers.relationshipType,
-          vibes: wizardAnswers.vibes,
-          isFallback: data.isFallback,
-        };
-
-        if (isRegenerate) {
-          regenerationCountRef.current += 1;
-          trackMessageRegenerated(data.version, regenerationCountRef.current, trackingMetadata);
-        } else {
-          regenerationCountRef.current = 1;
-          trackMessageGenerated(data.version, trackingMetadata);
-        }
+      if (!response.ok) {
+        setGenerationError('Could not generate a message. Please try again.');
+        return;
       }
-    } catch {
-      // Silently fail
+
+      const data = await response.json();
+      setGeneratedMessage(data.message);
+
+      // Track analytics with cohort and version
+      const trackingMetadata = {
+        occasion: wizardAnswers.occasion,
+        relationship: wizardAnswers.relationshipType,
+        vibes: wizardAnswers.vibes,
+        isFallback: data.isFallback,
+      };
+
+      if (isRegenerate) {
+        regenerationCountRef.current += 1;
+        trackMessageRegenerated(data.version, regenerationCountRef.current, trackingMetadata);
+      } else {
+        regenerationCountRef.current = 1;
+        trackMessageGenerated(data.version, trackingMetadata);
+      }
+    } catch (error) {
+      console.error('[Wizard] Generate message error:', error);
+      setGenerationError('Could not generate a message. Please try again.');
     } finally {
       setIsGenerating(false);
     }
@@ -681,7 +272,7 @@ export default function CardWizard({ card, onComplete, onBack }: Props) {
   const canProceed = useMemo(() => {
     switch (wizardStep) {
       case 'name':
-        return Boolean(wizardAnswers.name?.trim());
+        return Boolean((wizardAnswers.name || '').trim());
       case 'relationship':
         return Boolean(wizardAnswers.relationshipType);
       case 'occasion':
@@ -706,22 +297,55 @@ export default function CardWizard({ card, onComplete, onBack }: Props) {
     }
   }, [wizardStep, wizardAnswers]);
 
+  useEffect(() => {
+    if (wizardStep === 'preview') return;
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key !== 'Enter') return;
+      const target = event.target as HTMLElement | null;
+      if (target?.tagName === 'TEXTAREA') return;
+      if (target?.tagName === 'INPUT') return;
+      if (!canProceed) return;
+      event.preventDefault();
+      goNext();
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [wizardStep, canProceed, goNext]);
+
   const renderStep = () => {
     switch (wizardStep) {
       case 'name':
         return (
           <div className="flex flex-col gap-4">
             <div>
-              <label className="mb-2 block text-sm font-medium text-text-primary">
+              <label
+                className={cn(
+                  'mb-2 block text-sm font-medium text-stone-800',
+                  isFullscreen && 'text-base text-stone-900'
+                )}
+              >
                 Who is this card for?
               </label>
-              <input
-                type="text"
-                value={wizardAnswers.name || ''}
-                onChange={(e) => setWizardAnswer('name', e.target.value)}
-                placeholder="Enter their name"
-                autoFocus
-                className="w-full rounded-lg border border-theme-2 bg-transparent px-3 py-2 text-text-primary placeholder:text-text-muted focus:border-text-primary focus:outline-none"
+                <input
+                  type="text"
+                  value={wizardAnswers.name || ''}
+                  onChange={(e) => {
+                    setWizardAnswer('name', e.target.value);
+                  }}
+                  onKeyDown={(e) => {
+                    if (e.key !== 'Enter') return;
+                    if (!e.currentTarget.value.trim()) return;
+                    e.preventDefault();
+                    e.stopPropagation();
+                    goNext();
+                  }}
+                  placeholder="Enter their name"
+                  autoFocus
+                  className={cn(
+                    'w-full rounded-lg border border-stone-300 bg-white px-3 py-2 text-stone-800 placeholder:text-stone-500 focus:border-stone-600 focus:outline-none',
+                    isFullscreen &&
+                    'bg-white px-4 py-3 text-lg text-stone-900 placeholder:text-stone-500 border-stone-300 focus:border-stone-500'
+                )}
               />
             </div>
           </div>
@@ -730,7 +354,12 @@ export default function CardWizard({ card, onComplete, onBack }: Props) {
       case 'relationship':
         return (
           <div className="flex flex-col gap-4">
-            <label className="text-sm font-medium text-text-primary">
+            <label
+              className={cn(
+                'text-sm font-medium text-stone-800',
+                isFullscreen && 'text-base text-stone-900'
+              )}
+            >
               What&apos;s your relationship with {wizardAnswers.name || 'them'}?
             </label>
             <div className="flex flex-wrap gap-2">
@@ -740,6 +369,7 @@ export default function CardWizard({ card, onComplete, onBack }: Props) {
                   selected={wizardAnswers.relationshipType === opt.value}
                   onClick={() => setWizardAnswer('relationshipType', opt.value)}
                   emoji={opt.emoji}
+                  size={size}
                 >
                   {opt.label}
                 </PillButton>
@@ -751,7 +381,12 @@ export default function CardWizard({ card, onComplete, onBack }: Props) {
       case 'occasion':
         return (
           <div className="flex flex-col gap-4">
-            <label className="text-sm font-medium text-text-primary">
+            <label
+              className={cn(
+                'text-sm font-medium text-stone-800',
+                isFullscreen && 'text-base text-stone-900'
+              )}
+            >
               What&apos;s the occasion?
             </label>
             <div className="flex flex-wrap gap-2">
@@ -761,6 +396,7 @@ export default function CardWizard({ card, onComplete, onBack }: Props) {
                   selected={wizardAnswers.occasion === opt.value}
                   onClick={() => setWizardAnswer('occasion', opt.value)}
                   emoji={opt.emoji}
+                  size={size}
                 >
                   {opt.label}
                 </PillButton>
@@ -773,10 +409,17 @@ export default function CardWizard({ card, onComplete, onBack }: Props) {
         return (
           <div className="flex flex-col gap-4">
             <div>
-              <label className="text-sm font-medium text-text-primary">
+              <label
+                className={cn(
+                  'text-sm font-medium text-stone-800',
+                  isFullscreen && 'text-base text-stone-900'
+                )}
+              >
                 What vibe should this card have?
               </label>
-              <p className="mt-1 text-xs text-text-muted">Select all that apply</p>
+              <p className={cn('mt-1 text-xs text-stone-600', isFullscreen && 'text-sm text-stone-600')}>
+                Select all that apply
+              </p>
             </div>
             <div className="flex flex-wrap gap-2">
               {VIBE_OPTIONS.map((opt) => {
@@ -797,6 +440,7 @@ export default function CardWizard({ card, onComplete, onBack }: Props) {
                       }
                     }}
                     emoji={opt.emoji}
+                    size={size}
                   >
                     {opt.label}
                   </PillButton>
@@ -809,7 +453,12 @@ export default function CardWizard({ card, onComplete, onBack }: Props) {
       case 'humorType':
         return (
           <div className="flex flex-col gap-4">
-            <label className="text-sm font-medium text-text-primary">
+            <label
+              className={cn(
+                'text-sm font-medium text-stone-800',
+                isFullscreen && 'text-base text-stone-900'
+              )}
+            >
               What kind of humor?
             </label>
             <div className="grid gap-2">
@@ -820,6 +469,7 @@ export default function CardWizard({ card, onComplete, onBack }: Props) {
                   onClick={() => setWizardAnswer('humorType', opt.value)}
                   title={opt.label}
                   description={opt.description}
+                  size={size}
                 />
               ))}
             </div>
@@ -829,7 +479,12 @@ export default function CardWizard({ card, onComplete, onBack }: Props) {
       case 'heartfeltDepth':
         return (
           <div className="flex flex-col gap-4">
-            <label className="text-sm font-medium text-text-primary">
+            <label
+              className={cn(
+                'text-sm font-medium text-stone-800',
+                isFullscreen && 'text-base text-stone-900'
+              )}
+            >
               How deep should we go?
             </label>
             <div className="grid gap-2">
@@ -840,6 +495,7 @@ export default function CardWizard({ card, onComplete, onBack }: Props) {
                   onClick={() => setWizardAnswer('heartfeltDepth', opt.value)}
                   title={opt.label}
                   description={opt.description}
+                  size={size}
                 />
               ))}
             </div>
@@ -852,25 +508,45 @@ export default function CardWizard({ card, onComplete, onBack }: Props) {
         if (questions.length === 0) {
           return (
             <div className="flex flex-col gap-4">
-              <p className="text-sm text-text-muted">No additional questions for this relationship type.</p>
+              <p className={cn('text-sm text-stone-600', isFullscreen && 'text-base')}>
+                No additional questions for this relationship type.
+              </p>
             </div>
           );
         }
         return (
           <div className="flex flex-col gap-5">
-            <p className="text-xs text-text-muted">
+            <p className={cn('text-xs text-stone-600', isFullscreen && 'text-sm text-stone-600')}>
               These details help create a more personal message
             </p>
             {questions.map((q) => (
               <div key={q.key} className="flex flex-col gap-2">
-                <label className="text-sm font-medium text-text-primary">{q.question}</label>
+                <label
+                  className={cn(
+                    'text-sm font-medium text-stone-800',
+                    isFullscreen && 'text-base text-stone-900'
+                  )}
+                >
+                  {q.question}
+                </label>
                 {q.type === 'text' && (
                   <input
                     type="text"
                     value={(wizardAnswers[q.key] as string) || ''}
                     onChange={(e) => setWizardAnswer(q.key as keyof WizardAnswers, e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key !== 'Enter') return;
+                      if (!e.currentTarget.value.trim()) return;
+                      e.preventDefault();
+                      e.stopPropagation();
+                      if (canProceed) goNext();
+                    }}
                     placeholder={q.placeholder}
-                    className="w-full rounded-lg border border-theme-2 bg-transparent px-3 py-2 text-sm text-text-primary placeholder:text-text-muted focus:border-text-primary focus:outline-none"
+                    className={cn(
+                      'w-full rounded-lg border border-stone-300 bg-white px-3 py-2 text-sm text-stone-800 placeholder:text-stone-500 focus:border-stone-600 focus:outline-none',
+                      isFullscreen &&
+                        'bg-white px-4 py-3 text-base text-stone-900 placeholder:text-stone-500 border-stone-300 focus:border-stone-500'
+                    )}
                   />
                 )}
                 {q.type === 'pills' && q.options && (
@@ -880,6 +556,7 @@ export default function CardWizard({ card, onComplete, onBack }: Props) {
                         key={opt.value}
                         selected={wizardAnswers[q.key] === opt.value}
                         onClick={() => setWizardAnswer(q.key as keyof WizardAnswers, opt.value)}
+                        size={size}
                       >
                         {opt.label}
                       </PillButton>
@@ -895,10 +572,17 @@ export default function CardWizard({ card, onComplete, onBack }: Props) {
         return (
           <div className="flex flex-col gap-4">
             <div>
-              <label className="text-sm font-medium text-text-primary">
+              <label
+                className={cn(
+                  'text-sm font-medium text-stone-800',
+                  isFullscreen && 'text-base text-stone-900'
+                )}
+              >
                 Quick traits about {wizardAnswers.name || 'them'}
               </label>
-              <p className="mt-1 text-xs text-text-muted">Select any that apply (optional)</p>
+              <p className={cn('mt-1 text-xs text-stone-600', isFullscreen && 'text-sm text-stone-600')}>
+                Select any that apply (optional)
+              </p>
             </div>
             <div className="flex flex-wrap gap-2">
               {QUICK_TRAIT_OPTIONS.map((opt) => {
@@ -919,6 +603,7 @@ export default function CardWizard({ card, onComplete, onBack }: Props) {
                       }
                     }}
                     emoji={opt.emoji}
+                    size={size}
                   >
                     {opt.label}
                   </PillButton>
@@ -933,70 +618,105 @@ export default function CardWizard({ card, onComplete, onBack }: Props) {
           <div className="flex flex-col gap-4">
             {/* Generated message or generate button */}
             {generatedMessage ? (
-              <div className="rounded-lg border border-theme-2 bg-theme-3 p-4">
-                <p className="mb-2 text-xs font-medium uppercase tracking-wide text-text-muted">
+              <div className={cn('rounded-lg border border-stone-300 bg-white p-4 shadow-[0_6px_16px_rgba(0,0,0,0.08)]', isFullscreen && 'border-stone-300 bg-white shadow-[0_8px_24px_rgba(0,0,0,0.08)]')}>
+                <p
+                  className={cn(
+                    'mb-2 text-xs font-medium uppercase tracking-wide text-stone-600',
+                    isFullscreen && 'text-sm text-stone-600'
+                  )}
+                >
                   Your personalized message
                 </p>
-                <p className="text-sm leading-relaxed text-text-primary">{generatedMessage}</p>
-                <p className="mt-3 text-right text-sm text-text-secondary">
+                <p className={cn('text-sm leading-relaxed text-stone-800', isFullscreen && 'text-base text-stone-900')}>
+                  {generatedMessage}
+                </p>
+                <p className={cn('mt-3 text-right text-sm text-stone-700', isFullscreen && 'text-base text-stone-700')}>
                   — For {wizardAnswers.name}
                 </p>
               </div>
             ) : (
-              <button
-                type="button"
-                onClick={handleGenerateMessage}
-                disabled={isGenerating}
-                className="flex items-center justify-center gap-2 rounded-lg border border-dashed border-theme-2 p-4 text-sm text-text-secondary hover:border-text-secondary hover:text-text-primary"
-              >
-                <Sparkles className="size-4" />
-                {isGenerating ? 'Generating your message...' : 'Generate personalized message'}
-              </button>
+              <div className="flex flex-col gap-2">
+                <button
+                  type="button"
+                  onClick={handleGenerateMessage}
+                  disabled={isGenerating}
+                  className={cn(
+                    'flex items-center justify-center gap-2 rounded-lg border border-dashed border-stone-300 bg-white p-4 text-sm text-stone-700 hover:border-stone-500 hover:text-stone-900',
+                    isFullscreen && 'p-5 text-base border-stone-400 text-stone-700 hover:border-stone-600 hover:text-stone-900'
+                  )}
+                >
+                  <Sparkles className="size-4" />
+                  {isGenerating ? 'Generating your message...' : 'Generate personalized message'}
+                </button>
+                {generationError && (
+                  <p className={cn('text-sm text-red-700', isFullscreen && 'text-base text-red-700')}>
+                    {generationError}
+                  </p>
+                )}
+              </div>
             )}
 
             {/* Variant selection */}
             <div className="flex flex-col gap-2">
-              <label className="flex cursor-pointer items-center gap-3 rounded-lg border border-theme-2 p-3 transition-colors hover:border-text-secondary">
+              <label
+                className={cn(
+                  'flex cursor-pointer items-center gap-3 rounded-lg border border-stone-300 bg-white p-3 transition-colors hover:border-stone-500',
+                  isFullscreen && 'border-stone-300 bg-white hover:border-stone-500'
+                )}
+              >
                 <input
                   type="radio"
                   name="variant"
                   value="physical"
                   checked={variant === 'physical'}
                   onChange={() => setVariant('physical')}
-                  className="size-4 accent-text-primary"
+                  className={cn('size-4 accent-text-primary', isFullscreen && 'accent-stone-800')}
                 />
                 <div className="flex flex-1 items-center justify-between">
                   <div>
-                    <div className="font-medium text-text-primary">Physical Card</div>
-                    <div className="text-sm text-text-secondary">Printed & shipped</div>
+                    <div className={cn('font-medium text-stone-800', isFullscreen && 'text-stone-900')}>
+                      Physical Card
+                    </div>
+                    <div className={cn('text-sm text-stone-600', isFullscreen && 'text-stone-600')}>
+                      Printed & shipped
+                    </div>
                   </div>
-                  <div className="font-medium text-text-primary">
+                  <div className={cn('font-medium text-stone-800', isFullscreen && 'text-stone-900')}>
                     ${(card.pricing.physical + 2).toFixed(2)}
                   </div>
                 </div>
               </label>
 
-              <label className="flex cursor-pointer items-center gap-3 rounded-lg border border-theme-2 p-3 transition-colors hover:border-text-secondary">
+              <label
+                className={cn(
+                  'flex cursor-pointer items-center gap-3 rounded-lg border border-stone-300 bg-white p-3 transition-colors hover:border-stone-500',
+                  isFullscreen && 'border-stone-300 bg-white hover:border-stone-500'
+                )}
+              >
                 <input
                   type="radio"
                   name="variant"
                   value="digital"
                   checked={variant === 'digital'}
                   onChange={() => setVariant('digital')}
-                  className="size-4 accent-text-primary"
+                  className={cn('size-4 accent-text-primary', isFullscreen && 'accent-stone-800')}
                 />
                 <div className="flex flex-1 items-center justify-between">
                   <div>
-                    <div className="font-medium text-text-primary">Digital Download</div>
-                    <div className="text-sm text-text-secondary">Instant delivery</div>
+                    <div className={cn('font-medium text-stone-800', isFullscreen && 'text-stone-900')}>
+                      Digital Download
+                    </div>
+                    <div className={cn('text-sm text-stone-600', isFullscreen && 'text-stone-600')}>
+                      Instant delivery
+                    </div>
                   </div>
-                  <div className="font-medium text-text-primary">
+                  <div className={cn('font-medium text-stone-800', isFullscreen && 'text-stone-900')}>
                     ${(card.pricing.digital + 2).toFixed(2)}
                   </div>
                 </div>
               </label>
 
-              <p className="text-center text-xs text-text-muted">
+              <p className={cn('text-center text-xs text-stone-600', isFullscreen && 'text-stone-600')}>
                 Includes $2.00 personalization fee
               </p>
             </div>
@@ -1008,40 +728,170 @@ export default function CardWizard({ card, onComplete, onBack }: Props) {
     }
   };
 
+  const stepContext = useMemo(() => {
+    const name = wizardAnswers.name?.trim() || 'them';
+    switch (wizardStep) {
+      case 'name':
+        return {
+          title: "I’ll be your card guide.",
+          body: 'Let’s start with a name so every next choice feels personal.',
+        };
+      case 'relationship':
+        return {
+          title: 'How do you know them?',
+          body: `This sets the voice we’ll use for ${name}.`,
+        };
+      case 'occasion':
+        return {
+          title: 'What moment are we honoring?',
+          body: 'Occasion gives the message its frame and rhythm.',
+        };
+      case 'vibe':
+        return {
+          title: 'Choose the feeling.',
+          body: 'Pick one or blend a few. We’ll write to that mood.',
+        };
+      case 'humorType':
+        return {
+          title: 'How should the humor land?',
+          body: 'We’ll match it to your relationship so it feels right.',
+        };
+      case 'heartfeltDepth':
+        return {
+          title: 'How deep should this go?',
+          body: 'Light and sweet, or full‑heart. You decide.',
+        };
+      case 'relationshipQuestions':
+        return {
+          title: 'Add a real detail.',
+          body: 'One true moment beats a dozen generic lines.',
+        };
+      case 'quickTraits':
+        return {
+          title: 'Quick traits (optional).',
+          body: 'Small specifics make it feel written by you.',
+        };
+      case 'preview':
+        return {
+          title: 'Here’s the first draft.',
+          body: 'We can revise or regenerate. This is just the start.',
+        };
+      default:
+        return null;
+    }
+  }, [wizardStep, wizardAnswers.name]);
+
+  const hasAnyAnswers = useMemo(() => {
+    return Object.values(wizardAnswers).some((value) => {
+      if (Array.isArray(value)) return value.length > 0;
+      if (typeof value === 'string') return value.trim().length > 0;
+      return Boolean(value);
+    });
+  }, [wizardAnswers]);
+
+  const showIntro = isFullscreen && wizardStep === 'name' && !introDismissed && !hasAnyAnswers;
+
+  if (showIntro) {
+    return (
+      <div className={cn('flex min-h-[60vh] flex-col items-center justify-center gap-6 text-center', isFullscreen && 'py-6')}>
+        <div className="flex size-14 items-center justify-center rounded-full border border-stone-300 bg-white shadow-[0_8px_18px_rgba(0,0,0,0.08)]">
+          <Gift className="size-6 text-stone-800" />
+        </div>
+        <div className="space-y-2">
+          <h2 className={cn('text-2xl font-semibold text-stone-900', isFullscreen && 'text-3xl')}>
+            Let&apos;s write the card together.
+          </h2>
+          <p className={cn('text-sm text-stone-700', isFullscreen && 'text-base')}>
+            A few quick prompts, then a draft that sounds like you.
+          </p>
+        </div>
+        <div className="flex flex-wrap items-center justify-center gap-3">
+          <Button
+            onClick={() => setIntroDismissed(true)}
+            variant="secondary"
+            className={cn('px-6', isFullscreen && 'py-3 text-base')}
+          >
+            Start the guide
+          </Button>
+          <Button
+            onClick={() => setIntroDismissed(true)}
+            variant="text"
+            className={cn('px-4 text-stone-700 hover:text-stone-900', isFullscreen && 'py-3 text-base')}
+          >
+            Jump right in
+          </Button>
+        </div>
+      </div>
+    );
+  }
+
   return (
-    <div className="flex flex-col gap-4">
+    <div className={cn('flex flex-col gap-4', isFullscreen && 'text-stone-900')}>
+      {stepContext && (
+        <div
+          className={cn(
+            'rounded-2xl border border-stone-300 bg-white/95 px-4 py-3 text-stone-900 shadow-[0_12px_30px_rgba(0,0,0,0.18)] backdrop-blur-sm',
+            isFullscreen && 'px-6 py-4'
+          )}
+        >
+          <p className={cn('text-sm font-semibold', isFullscreen && 'text-lg')}>
+            {stepContext.title}
+          </p>
+          <p className={cn('mt-1 text-xs text-stone-700', isFullscreen && 'text-base')}>
+            {stepContext.body}
+          </p>
+        </div>
+      )}
+
       {/* Progress bar */}
       <div className="flex items-center gap-3">
-        <div className="relative h-1.5 flex-1 overflow-hidden rounded-full bg-theme-2">
+        <div className="relative h-1.5 flex-1 overflow-hidden rounded-full bg-stone-200">
           <div
-            className="absolute inset-y-0 left-0 rounded-full bg-text-primary transition-all duration-300"
+            className="absolute inset-y-0 left-0 rounded-full bg-stone-800 transition-all duration-300"
             style={{ width: `${progress}%` }}
           />
         </div>
-        <span className="text-xs tabular-nums text-text-muted">{progress}%</span>
+        <span className={cn('text-xs tabular-nums text-stone-600', isFullscreen && 'text-sm')}>
+          {progress}%
+        </span>
       </div>
 
       {/* Step indicator */}
       <div className="flex items-center gap-2">
-        <span className="text-xs font-medium uppercase tracking-wide text-text-muted">
+        <span className={cn('text-xs font-semibold uppercase tracking-wide text-stone-800', isFullscreen && 'text-sm')}>
           {STEP_LABELS[wizardStep]}
         </span>
-        <span className="text-xs text-text-muted">
+        <span className={cn('text-xs text-stone-600', isFullscreen && 'text-sm')}>
           ({visibleStepIndex + 1}/{visibleSteps.length})
         </span>
       </div>
 
       {/* Step content */}
-      <div className="min-h-[200px]">{renderStep()}</div>
+      <div className={cn('min-h-[200px]', isFullscreen && 'min-h-[260px]')}>{renderStep()}</div>
 
       {/* Navigation */}
-      <div className="flex gap-2 pt-2">
-        <Button onClick={goBack} variant="text" className="flex items-center gap-1">
+      <div className="flex items-center gap-2 pt-2">
+        <Button
+          onClick={goBack}
+          variant="text"
+          className={cn(
+            'flex items-center gap-1',
+            isFullscreen && 'py-3 text-base text-stone-700 hover:text-stone-900'
+          )}
+        >
           <ArrowLeft className="size-4" />
           {visibleStepIndex === 0 ? 'Cancel' : 'Back'}
         </Button>
         {wizardStep === 'preview' ? (
-          <Button onClick={handleAddToCart} variant="secondary" className="flex-1">
+          <Button
+            onClick={handleAddToCart}
+            variant="secondary"
+            className="ml-auto shrink-0"
+            buttonClassName={cn(
+              'px-6 py-2 text-sm whitespace-nowrap',
+              isFullscreen && 'py-3 text-base',
+            )}
+          >
             {added ? (
               <span className="flex items-center gap-1">
                 <Check className="size-4" /> Added!
@@ -1051,7 +901,19 @@ export default function CardWizard({ card, onComplete, onBack }: Props) {
             )}
           </Button>
         ) : (
-          <Button onClick={goNext} disabled={!canProceed} variant="secondary" className="flex-1">
+          <Button
+            onClick={goNext}
+            disabled={!canProceed}
+            variant="secondary"
+            className="ml-auto shrink-0"
+            buttonClassName={cn(
+              'px-6 py-2 text-sm whitespace-nowrap',
+              isFullscreen && 'py-3 text-base',
+              canProceed
+                ? 'bg-stone-900 text-white hover:bg-stone-800'
+                : 'bg-stone-300 text-stone-500 cursor-not-allowed',
+            )}
+          >
             Continue
           </Button>
         )}

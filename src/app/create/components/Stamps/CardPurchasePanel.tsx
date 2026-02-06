@@ -1,7 +1,7 @@
 'use client';
 
 import { motion } from 'framer-motion';
-import { Sparkles } from 'lucide-react';
+import { Sparkles, ZoomIn, ZoomOut } from 'lucide-react';
 import { Fragment, useState } from 'react';
 
 import { cn } from '~/src/util';
@@ -25,11 +25,22 @@ interface CardPurchasePanelProps {
   card?: Card;
   className?: string;
   onPersonalize?: () => void;
+  showWizardCta?: boolean;
+  showZoomToggle?: boolean;
 }
 
-export function CardPurchasePanel({ card: cardProp, className, onPersonalize }: CardPurchasePanelProps) {
+export function CardPurchasePanel({
+  card: cardProp,
+  className,
+  onPersonalize,
+  showWizardCta = true,
+  showZoomToggle = false,
+}: CardPurchasePanelProps) {
   const [variant, setVariant] = useState<CardVariant>('digital');
   const startWizard = useCardStore((s) => s.startWizard);
+  const toggleZoomed = useCardStore((s) => s.toggleZoomed);
+  const zoomEnabled = useCardStore((s) => s.zoomEnabled);
+  const isZoomed = useCardStore((s) => s.isZoomed);
   const selectedCardId = useCardStore((s) => s.selectedCardId);
   const collection = useCardStore((s) => s.collection);
   const wizardMode = useCardStore((s) => s.wizardMode);
@@ -42,6 +53,7 @@ export function CardPurchasePanel({ card: cardProp, className, onPersonalize }: 
   if (!card) return null;
 
   const price = variant === 'physical' ? card.pricing.physical : card.pricing.digital;
+  const zoomLabel = isZoomed ? 'Exit zoom' : 'Zoom in';
 
   return (
     <motion.div
@@ -126,23 +138,42 @@ export function CardPurchasePanel({ card: cardProp, className, onPersonalize }: 
           })}
         </div>
       ) : (
-        /* Make My Card Button (hidden when wizard is active) */
-        <button
-          onClick={() => {
-            startWizard();
-            onPersonalize?.();
-          }}
-          className={cn(
-            'flex w-full items-center justify-center gap-2 rounded-md px-4 py-3',
-            'bg-stone-800 text-white',
-            'font-mono text-sm font-bold uppercase tracking-wide',
-            'transition-colors hover:bg-stone-700',
-            'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-stone-500 focus-visible:ring-offset-2'
+        <div className="flex flex-col gap-2">
+          {showWizardCta && (
+            <button
+              onClick={() => {
+                startWizard();
+                onPersonalize?.();
+              }}
+              className={cn(
+                'flex w-full items-center justify-center gap-2 rounded-md px-4 py-3',
+                'bg-stone-800 text-white',
+                'font-mono text-sm font-bold uppercase tracking-wide',
+                'transition-colors hover:bg-stone-700',
+                'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-stone-500 focus-visible:ring-offset-2'
+              )}
+            >
+              <Sparkles className="size-4" />
+              <span>Write the message</span>
+            </button>
           )}
-        >
-          <Sparkles className="size-4" />
-          <span>Personalize with AI</span>
-        </button>
+          {showZoomToggle && (
+            <button
+              onClick={() => toggleZoomed()}
+              disabled={!zoomEnabled}
+              className={cn(
+                'flex w-full items-center justify-center gap-2 rounded-md border px-4 py-2',
+                'border-stone-300 bg-white text-stone-700',
+                'font-mono text-xs font-semibold uppercase tracking-wide',
+                'transition-colors hover:border-stone-500 hover:text-stone-900',
+                'disabled:cursor-not-allowed disabled:opacity-50'
+              )}
+            >
+              {isZoomed ? <ZoomOut className="size-4" /> : <ZoomIn className="size-4" />}
+              <span>{zoomLabel}</span>
+            </button>
+          )}
+        </div>
       )}
     </motion.div>
   );

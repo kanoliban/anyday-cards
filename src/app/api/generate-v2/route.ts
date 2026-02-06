@@ -1,9 +1,12 @@
-import { GoogleGenerativeAI } from '@google/generative-ai';
+import OpenAI from 'openai';
 import { NextResponse } from 'next/server';
 import { z } from 'zod';
 
 import { v2 } from '~/src/lib/adc';
 import type { GenerationInput } from '~/src/lib/adc';
+import { generateTextWithOpenAI } from '~/src/lib/adc/openai';
+import { buildMessageSpec } from '~/src/lib/adc/spec';
+import { buildRepairPrompt, validateGeneratedMessage } from '~/src/lib/adc/validate';
 
 const { buildTextPromptV2, getTextFallbackV2, ADC_VERSION_V2 } = v2;
 
@@ -50,7 +53,7 @@ export async function POST(req: Request): Promise<Response> {
       );
     }
 
-    const input: GenerationInput = parsed.data;
+    const input: GenerationInput = buildMessageSpec(parsed.data);
 
     // Log generation request with ADC version for analytics
     console.log('[ADC v2]', {
@@ -62,7 +65,7 @@ export async function POST(req: Request): Promise<Response> {
       hasRelationshipDetails: !!input.relationshipDetails && Object.keys(input.relationshipDetails).length > 0,
     });
 
-    const apiKey = process.env.GOOGLE_GEMINI_API_KEY;
+    const apiKey = process.env.OPENAI_API_KEY;
     if (!apiKey) {
       // Return fallback when no API key
       const fallback = getTextFallbackV2(input);
@@ -76,17 +79,72 @@ export async function POST(req: Request): Promise<Response> {
     // Use ADC v2 to build system prompt + user message
     const { systemPrompt, userMessage, version } = buildTextPromptV2(input);
 
-    const genAI = new GoogleGenerativeAI(apiKey);
-    const model = genAI.getGenerativeModel({
-      model: 'gemini-2.0-flash',
-      systemInstruction: systemPrompt,
-    });
+    const client = new OpenAI({ apiKey });
+    const model =
+      process.env.OPENAI_MODEL && process.env.OPENAI_MODEL.trim()
+        ? process.env.OPENAI_MODEL.trim()
+        : 'gpt-4.1-mini';
 
-    const result = await model.generateContent(userMessage);
-    const response = result.response;
-    const generatedText = response.text().trim();
+    const maxOutputTokens = 180;
+    const temperature = (() => {
+      const vibes = new Set(input.vibes ?? []);
+      const occasion = (input.occasion ?? '').toLowerCase();
+      if (occasion === 'apology' || occasion === 'support') return 0.6;
+      if (vibes.has('weird')) return 0.9;
+      if (vibes.has('funny')) return 0.85;
+      return 0.75;
+    })();
+
+    let generated = await generateTextWithOpenAI({
+      client,
+      model,
+      systemPrompt,
+      userMessage,
+      maxOutputTokens,
+      temperature,
+    });
+    let generatedText = generated.text;
+
+    // Validate output and attempt exactly one repair pass if it violates constraints.
+    let validation = validateGeneratedMessage(generatedText, input);
+    let repairUsed = false;
+    if (!validation.ok) {
+      const repairInput = buildRepairPrompt({
+        userMessage,
+        draft: generatedText,
+        validation,
+      });
+      const repaired = await generateTextWithOpenAI({
+        client,
+        model,
+        systemPrompt,
+        userMessage: repairInput,
+        maxOutputTokens,
+        temperature: Math.max(0.4, temperature - 0.15),
+      });
+      const validation2 = validateGeneratedMessage(repaired.text, input);
+      if (validation2.ok) {
+        generated = repaired;
+        generatedText = repaired.text;
+        validation = validation2;
+        repairUsed = true;
+      }
+    }
 
     if (!generatedText) {
+      const fallback = getTextFallbackV2(input);
+      return NextResponse.json({
+        message: fallback.message,
+        version: fallback.version,
+        isFallback: true,
+      });
+    }
+
+    if (!validation.ok) {
+      console.warn('[ADC v2] Output failed validation, falling back.', {
+        issues: validation.issues,
+        sentenceCount: validation.sentenceCount,
+      });
       const fallback = getTextFallbackV2(input);
       return NextResponse.json({
         message: fallback.message,
@@ -98,6 +156,10 @@ export async function POST(req: Request): Promise<Response> {
     return NextResponse.json({
       message: generatedText,
       version,
+      isFallback: false,
+      provider: generated.provider,
+      usage: generated.usage,
+      repairUsed,
     });
   } catch (error) {
     console.error('[ADC v2] Generate message error:', error);

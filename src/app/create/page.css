@@ -13,6 +13,10 @@
   pointer-events: none;
 }
 
+.grain-strong.grain::before {
+  opacity: 35%;
+}
+
 .stamps-layout ::selection {
   background: var(--color-stone-300);
   color: var(--color-stone-600);

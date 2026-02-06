@@ -6,14 +6,15 @@ import { useSearchParams } from 'next/navigation';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import FocusLock from 'react-focus-lock';
 
+import Button from '~/src/components/ui/Button';
 import { cn } from '~/src/util';
 
 import CartButton from '../../(main)/shop/components/CartButton';
 import { collections, CollectionType } from '../constants';
 import { Card } from '../models';
 import { useCardStore } from '../store';
-import CardWizard from './CardWizard';
 import EmptyState from './EmptyState';
+import CardWizard from './CardWizard';
 import MetadataTable from './MetadataTable';
 
 type TypingAnimationOptions = {
@@ -106,6 +107,7 @@ export default function Description({ className }: { className?: string }) {
   const selectedCardId = useCardStore((s) => s.selectedCardId);
   const collection = useCardStore((s) => s.collection);
   const wizardMode = useCardStore((s) => s.wizardMode);
+  const startWizard = useCardStore((s) => s.startWizard);
   const setWizardMode = useCardStore((s) => s.setWizardMode);
   const selectCardForWizard = useCardStore((s) => s.selectCardForWizard);
   const [animate, setAnimate] = useState(false);
@@ -201,6 +203,31 @@ export default function Description({ className }: { className?: string }) {
           it&apos;s for and how you feel — we&apos;ll help you find the right words.
         </motion.p>
 
+        <AnimatePresence mode="popLayout" initial={false}>
+          {selectedCardId && !wizardMode && (
+            <motion.div
+              key="personalize-cta"
+              initial={{ opacity: 0, y: 8, filter: 'blur(4px)' }}
+              animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
+              exit={{ opacity: 0, y: 8, filter: 'blur(4px)' }}
+              transition={{ duration: 0.35 }}
+              className="rounded-2xl border border-stone-300 bg-white/95 p-4 text-stone-800 shadow-[0_12px_30px_rgba(0,0,0,0.18)] backdrop-blur-sm"
+            >
+              <p className="text-sm text-stone-700">
+                Want it to feel personal? We&apos;ll guide you through a few quick prompts.
+              </p>
+              <Button
+                onClick={() => startWizard()}
+                variant="secondary"
+                className="mt-3"
+                buttonClassName="px-6"
+              >
+                Personalize this card
+              </Button>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
         <motion.div
           className="lg:hidden"
           variants={slideInVariants}
@@ -220,21 +247,19 @@ export default function Description({ className }: { className?: string }) {
           onAnimationComplete={() => setAnimate(true)}
         >
           <AnimatePresence mode="popLayout" initial={false}>
-            {wizardMode && card ? (
-              <motion.div key="wizard" {...fadeInProps}>
-                <FocusLock group={`wizard-${selectedCardId}`}>
+            {selectedCardId ? (
+              <motion.div key={wizardMode ? 'wizard' : 'metadata-table'} {...fadeInProps}>
+                {wizardMode && card ? (
                   <CardWizard
                     card={card}
-                    onComplete={() => setWizardMode(false)}
                     onBack={() => setWizardMode(false)}
+                    onComplete={() => setWizardMode(false)}
                   />
-                </FocusLock>
-              </motion.div>
-            ) : selectedCardId ? (
-              <motion.div key="metadata-table" {...fadeInProps}>
-                <FocusLock group={`card-${selectedCardId}`}>
-                  <MetadataTable />
-                </FocusLock>
+                ) : (
+                  <FocusLock disabled={wizardMode} group={`card-${selectedCardId}`}>
+                    <MetadataTable />
+                  </FocusLock>
+                )}
               </motion.div>
             ) : (
               <motion.div key="empty-state" {...fadeInProps}>

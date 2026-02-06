@@ -1,13 +1,21 @@
 'use client';
 
-import { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { useEffect, useState } from 'react';
 
 import Button from '~/src/components/ui/Button';
+import {
+  consumeQuickCreateDraft,
+  peekQuickCreateDraft,
+  QUICK_CREATE_DRAFT_CHANGED_EVENT,
+  type QuickCreateDraft,
+} from '~/src/lib/quick-create-draft';
 import { cn } from '~/src/util';
 
 import { useCartStore } from '../../(main)/shop/store';
-import type { Card, CardVariant } from '../models';
+import type { Card, CardVariant, WizardAnswers } from '../models';
+
+const PERSONALIZATION_FEE = 2;
 
 type Props = {
   card: Card;
@@ -19,12 +27,47 @@ export default function CardPurchaseForm({ card, className }: Props) {
   const [variant, setVariant] = useState<CardVariant>('digital');
   const [mode, setMode] = useState<'buy' | 'customize'>('buy');
   const [added, setAdded] = useState(false);
+  const [quickDraft, setQuickDraft] = useState<QuickCreateDraft | null>(null);
 
   const addItem = useCartStore((s) => s.addItem);
   const setCartOpen = useCartStore((s) => s.setOpen);
 
+  useEffect(() => {
+    const syncQuickDraft = () => {
+      setQuickDraft(peekQuickCreateDraft());
+    };
+
+    syncQuickDraft();
+
+    window.addEventListener(QUICK_CREATE_DRAFT_CHANGED_EVENT, syncQuickDraft);
+    return () => {
+      window.removeEventListener(QUICK_CREATE_DRAFT_CHANGED_EVENT, syncQuickDraft);
+    };
+  }, []);
+
+  const hasQuickDraft = Boolean(quickDraft);
+
+  const physicalPrice = card.pricing.physical + (hasQuickDraft ? PERSONALIZATION_FEE : 0);
+  const digitalPrice = card.pricing.digital + (hasQuickDraft ? PERSONALIZATION_FEE : 0);
+
   function handleAddToCart() {
-    addItem(card, variant);
+    const activeDraft = peekQuickCreateDraft();
+
+    if (activeDraft) {
+      addItem(card, variant, 1, {
+        recipientName: activeDraft.recipientName,
+        relationship: activeDraft.relationship,
+        occasion: activeDraft.occasion,
+        message: activeDraft.message,
+        wizardAnswers: activeDraft.wizardAnswers as WizardAnswers,
+        generatedAt: activeDraft.generatedAt,
+      });
+      consumeQuickCreateDraft();
+      setQuickDraft(null);
+    } else {
+      addItem(card, variant);
+    }
+
     setAdded(true);
     setTimeout(() => setAdded(false), 2000);
     setCartOpen(true);
@@ -59,6 +102,12 @@ export default function CardPurchaseForm({ card, className }: Props) {
 
       {mode === 'buy' && (
         <>
+          {quickDraft && (
+            <div className="rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-xs text-amber-900">
+              Using your generated message for {quickDraft.recipientName}. This applies once.
+            </div>
+          )}
+
           {/* Variant selection */}
           <div className="flex flex-col gap-2">
             <label className="flex cursor-pointer items-center gap-3 rounded-lg border border-theme-2 p-3 transition-colors hover:border-text-secondary">
@@ -78,7 +127,7 @@ export default function CardPurchaseForm({ card, className }: Props) {
                   </div>
                 </div>
                 <div className="font-medium text-text-primary">
-                  ${card.pricing.physical.toFixed(2)}
+                  ${physicalPrice.toFixed(2)}
                 </div>
               </div>
             </label>
@@ -100,7 +149,7 @@ export default function CardPurchaseForm({ card, className }: Props) {
                   </div>
                 </div>
                 <div className="font-medium text-text-primary">
-                  ${card.pricing.digital.toFixed(2)}
+                  ${digitalPrice.toFixed(2)}
                 </div>
               </div>
             </label>
@@ -111,7 +160,7 @@ export default function CardPurchaseForm({ card, className }: Props) {
             onClick={handleAddToCart}
             className="w-full justify-center py-3"
           >
-            {added ? 'Added!' : 'Add to Cart'}
+            {added ? 'Added!' : hasQuickDraft ? 'Add Personalized Card' : 'Add to Cart'}
           </Button>
         </>
       )}
